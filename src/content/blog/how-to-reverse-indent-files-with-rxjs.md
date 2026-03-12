@@ -1,0 +1,99 @@
+---
+title: "How To Reverse Indent Files With RxJS"
+description: "A Basic introduction to reactive programming using RxJS 5.0 by building a node script that reverse indents files."
+pubDate: 2018-06-05
+heroImage: "/content/images/2018/06/Assembly-Line.jpg"
+tags: ["Javascript","development"]
+---
+
+## Reactive Terminology & RxJS
+
+_Reactive Programming_ is a [Paradigm](https://en.wikipedia.org/wiki/Programming_paradigm) that offers a unique approach to solving software problems. Data is described as a stream of events, called an _Observable_. These streams can be manipulated by chaining _Operators_ to produce new _Observables_. Finally a _Subscriber_ can be attached to an _Observable_ to produce an end result or [side effect](https://en.wikipedia.org/wiki/Side_effect_\(computer_science\)). Applying this paradigm leads to more expressive code that tends to describe _what_ is being done, instead of _how_ it is being done, which is so prevalent in [Imperative Programming](https://en.wikipedia.org/wiki/Imperative_programming).
+
+[RxJS](http://reactivex.io/rxjs/) is the Javascript implementation of the [Reactive API](http://reactivex.io/), many other languages are supported.
+
+### Observables
+
+Can be thought of as the primitive type of _Reactive_ programming. An _Observable_ is an object that produces values. There are two types of _Obervables_:
+
+**Hot Observables** will produce values regardless of whether there are any subscribers to consume these values. Late subscriptions will not receive any historical events.
+
+**Cold Observables** are lazy and will only start producing values once a subscriber is attached. All the subscribers will receive all the events produced by the _Cold Observable_. Another way to look at it, is that the generator function of the _Observable_ will run for every new _subscriber_.
+
+Apart from producing values, _Observables_ can produce two more signals: _error_ to indicate that the _Observable_ failed to produce values and _complete_ to signal that no more values will be produced.
+
+RxJS includes many factory methods to create _Observables_ [from common sources](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html).
+
+### Operators
+
+An _Operator_ is a special kind of _Observable_, it does not produce values in itself, instead it operates on the values produced by another _Observable_. Put differently, an _Operator_ is an _Observable_ that wraps another _Observable_.
+
+RxJS includes plenty of [built in operators](https://github.com/ReactiveX/rxjs/blob/master/doc/operators.md#categories-of-operators).
+
+### Subscribers
+
+_Subscribers_ sit at the end of the pipeline, after all the configured _Operators_ have mutated the values produced by the _Observable_. As mentioned earlier, when a new _Subscriber_ is attached to a _Cold Observable_, the generator function of that _Observable_ will be re-run.
+
+## Example: Reverse Indent Files
+
+A fun example of applying RxJS is a node script that reverse indents files. How is this useful you ask? Think of your first pull request on April Fools' Day with all the source files reverse indented! That will surely produce some interesting feedback.
+
+The source for this example can be found on [GitHub](https://github.com/monkey-codes/node-reverse-indent).
+
+What do I mean by _reverse indented files_? Consider the following example,  
+given a file with the following content:
+
+```
+****
+ ****
+   ****
+     ****
+   ****
+ ****
+****
+
+```
+
+The script will overwrite the file with:
+
+```
+     ****
+    ****
+  ****
+****
+  ****
+    ****
+     ****
+
+```
+
+### Step 1: Recursively Read Files In A Directory
+
+Start by recursively reading all the files in a given directory. I made use of [recursive-readdir](https://github.com/jergason/recursive-readdir) to get the job done. The first step also makes use of the `Observable.bindNodeCallback` factory method provided by RxJS to create the initial Observable.
+
+### Step 2: Map contents to an array of lines
+
+The next step is to map the stream of files to a stream of objects with two properties, the file name and its contents as an array of lines. Later the file name will be used to write the result of the reverse indentation back to the file system.
+
+### Step 3: Find the longest line
+
+The key step is to find the longest line in the file. This will be used to calculate how much whitespace to prefix every line with.
+
+### Step 4: Swap whitespace around
+
+Once the longest line in the file is found, every line can be reverse indented by moving the whitespace at the beginning of the line to the end of the line and then padding the beginning of the line with whitespace until it is the same length as the longest line.
+
+### Step 5: Optionally add some logging to the pipeline
+
+Peeking into the stream without causing any side effects can be achieved through the `do` operator. In the gist below the original content of the file is logged in red, followed by the reverse indented lines logged in green. The output is only produced if the `verbose` flag is passed in from the command line.
+
+### Step 6: Subscribe to the result and write the file.
+
+Finally a subscriber is registered at the end of the stream to receive the results, one file at a time. Depending on whether the `dryRun` flag was passed in from the CLI, the subscriber will either log the results or replace the contents of the original file with its reverse indented counterpart.
+
+## References
+
+[https://github.com/ReactiveX/RxJS](https://github.com/ReactiveX/RxJS)  
+[http://reactivex.io/rxjs/](http://reactivex.io/rxjs/)  
+[http://rxmarbles.com/](http://rxmarbles.com/)  
+[https://jaredforsyth.com/rxvision/examples/playground/](https://jaredforsyth.com/rxvision/examples/playground/)

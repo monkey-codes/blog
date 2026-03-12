@@ -1,0 +1,73 @@
+---
+title: "How To Build a Chat App Using WebFlux, WebSockets & React"
+description: ""
+pubDate: 2017-09-17
+heroImage: "/content/images/2017/09/webflux.jpg"
+tags: ["Spring","development","Javascript"]
+---
+
+[WebFlux](http://docs.spring.io/spring-framework/docs/5.0.0.RC2/spring-framework-reference/web.html#web-reactive) is one of the standout features of Spring 5.0, which is a functional web framework alternative to Spring-MVC, built on top of Reactive principles. This post will look at how to build a basic chat application using WebFlux on the server to handle incoming WebSockets and React on the front end.
+
+## What is Reactive Streams & WebFlux
+
+Fundamentally, [Reactive Streams](http://www.reactive-streams.org/) defines a specification for asynchronous processing of streams. WebFlux uses [Reactor](https://projectreactor.io/) underneath which implements the _reactive streams_ specification. _Reactor_ defines the 2 [basic building blocks, _Flux_ & _Mono_](https://spring.io/blog/2016/04/19/understanding-reactive-types) that _WebFlux_ uses to deal with streams of HTTP requests or WebSocket messages. In a nutshell, a _Flux_ represents a stream of values ranging from _0..N_ and a _Mono_ from _0..1_.
+
+## Why Reactive Streams?
+
+The major application of Reactive Streams lies in the **ability to build non-blocking programs** that require only a small number of threads to scale. Traditional Servlet Spec applications use a request-per-thread model. That means for every HTTP request a thread is allocated to process it. Should that particular request run an expensive database query or communicate with an external service, the allocated thread will block while it waits for a response.
+
+Contrast that to a reactive application, where the request is seen as an event being processed by a shared pool of threads. If the request depends on an external service, the specification provides an efficient way to release that thread until the resource completes, freeing it up to process other requests or deal with any other events in the system. Once the resource completes, it is seen as a separate event that will be processed by one of the shared threads and subsequently complete the original HTTP request.
+
+## Sample Application Setup
+
+The sample chat application can be cloned from [GitHub](https://github.com/monkey-codes/java-reactive-chat). In order to build the application `npm 4.1.2` and `node 7.7.1` needs to be installed in the environment, the Gradle build will delegate to these binaries to assemble the UI. The application was built using `spring 5.0.0.RC2` and `spring-boot 2.0.0.M2`.
+
+```bash
+$ git clone git@github.com:monkey-codes/java-reactive-chat.git
+$ cd java-reactive-chat
+$ npm -version
+4.1.2
+$ node -v
+v7.7.1
+$ ./gradlew clean build
+$ java -jar build/libs/java-reactive-chat-0.0.1-SNAPSHOT.jar
+
+```
+
+After the server has started the application can be accessed at `http://localhost:8080`
+
+## Basic architecture
+
+In WebFlow, WebSockets are handled by implementing `WebSocketHandler`. The handler is provided with a `WebSocketSession` every time a connection is established. A `WebSocketSession` represents the connection made by a single browser. It has 2 _Flux_ streams associated with it, the `receive()` stream for incoming messages and the `send()` stream outgoing messages.
+
+To link every `WebSocketSession`, a global message publisher (of type `UnicastProcessor`) is used. The publisher contains one Flux stream for all messages it receives. For the sake of clarity, I will call this the global message stream (GMS). For every `WebSocketSession` there will be one subscriber to its `receive()` stream that will publish every received message to the GMS. This will ensure that all messages received by every `WebSocketSession` will pass through the GMS. To close the loop, every `WebSocketSession` will get a subscriber to the GMS stream that will deliver received messages back to the client via the `send` method.
+
+Since not all clients will connect at the same time, the publisher is configured to retain the last 25 messages and replays it to any new subscribers.
+
+![chat app architecture](https://res.cloudinary.com/monkey-codes/image/upload/v1505120662/webflux/chat-app-architecture.png)
+
+## Configure WebFlux to Handle WebSockets
+
+To enable WebSocket connections through _WebFlux_, a `SimpleUrlHandlerMapping` can be used. It maps a _WebSocket_ URL to an implementation of a `WebSocketHandler`. One thing to note is the explicit order of the `HandlerMapping`, omitting the order causes the mapping to clash with the `RouterFunction` configuration that deals with HTTP requests.
+
+## Connecting WebSocket Sessions
+
+The crux of the application is to connect the `WebSocketSessions` to one another. This is achieved by connecting the incoming message stream of every session to a global publisher. On the flip side, every session subscribes to messages produced by the global publisher.
+
+## Publish Session Disconnects
+
+A key feature of any chat application is notifying all clients when one client disconnects. This can be achieved by publishing a _Disconnect Message_ on the GMS when the subscriber to the `WebSocketSession` receives an `onComplete` signal.
+
+## Collecting Stats
+
+Collecting basic stats like message count for each user and when the last message was sent can be achieved by registering another subscriber to the GMS. The subscriber can collect the information by filtering the different types of messages flowing through the GMS. In the sample app, the `UserStats` class collects stats and emits it to all the users via a new message on the GMS whenever a new client connects to the chat application.
+
+## Front End
+
+The front end is a simple React with Redux application. Redux middleware manages the lifecycle of the WebSocket connection. Whenever an action of type `WEBSOCKET_CONNECT` is dispatched, the middleware connects to the WebSocket URL in the payload. Similarly, the `WEBSOCKET_SEND` action will send the payload as a JSON string over the WebSocket. The [source](https://github.com/monkey-codes/java-reactive-chat/tree/master/src/main/ui/app) for the React application is included with the rest of the sample code on [GitHub](https://github.com/monkey-codes/java-reactive-chat).
+
+## Conclusion
+
+There is a big paradigm shift from the traditional request processing model that you expect to see with Java Servlet Spec based applications. While it may take a while to fully understand how to deal with HTTP Requests or WebSocket messages as a Flux of events, the benefits are considerable. Not only will applications built this way scale better than the request per thread model, but it will benefit from the rich set of functionality that comes with the reactive streams API. The `UserStats` and replay of recent messages demonstrates some of the capability included in the API.
+
+![screenshot](https://res.cloudinary.com/monkey-codes/image/upload/v1505618654/chat-app-screenshot.png)

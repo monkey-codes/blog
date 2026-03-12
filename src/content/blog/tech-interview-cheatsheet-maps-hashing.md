@@ -1,0 +1,59 @@
+---
+title: "Tech Interview CheatSheet - Maps & Hashing"
+description: ""
+pubDate: 2017-05-27
+heroImage: "/content/images/2017/05/tech_interview_cheatsheet-1.jpg"
+tags: ["Algorithms","development"]
+---
+
+In Part 1 of this series I looked at [common search and sorting algorithms used on Lists](/tech-interview-cheatsheet-lists-search-sort/). This post will look at _Hash functions_ and how they are applied to _Sets_ and _Maps_ to offer constant time lookup performance.
+
+## Hash Functions
+
+A _Hash_ function takes a value and produces a number that is often used as an index in an _Array_.
+
+For example, when storing large random numbers, a simple _Hash_ function could take the last few digits, those most likely to change often, and divide it by some constant using the remainder as an index ([Modulo or % operator](https://en.wikipedia.org/wiki/Modulo_operation)).
+
+### Collisions
+
+_Collisions_ happen when the _Hash function_ returns the same value for 2 different inputs. There are 2 ways to address _Collisions_:
+
+*   Change the _Hash_ function so that it will produce more possible slots. This will maintain $O(1)$ performance but comes at the cost of more space. The end result could be a large yet sparsely populated _Array_.
+*   Change the structure by storing a _List_ of values at each index, generally called _Buckets_. This approach still requires iteration to find the correct value, but over a much smaller _List_. The average case will typically lead to $O(1)$ lookup time, but worst case could be $O(n)$ if all the values end up in the same _Bucket_.
+
+### Load Factor
+
+$$ \\text{load\_factor} = \\text{no\_of\_entries} \\div \\text{no\_of\_buckets}$$
+
+Gives a sense of how full a _Hash Table_ is. A _Load Factor_ of 0.01 means only 10 values are stored in a _Hash Table_ with a 1000 buckets, a huge waste of memory.
+
+_Load Factor_ can be used to determine when to rehash, as it approaches 0 the _Hash Table_ is sparsely populated. On the flip side, as it approaches 1 it is densely populated and more buckets should be added, since a value larger than 1 will certainly cause a _Collision_.
+
+_Question:_ If a _Hash function_ divides by 100 and uses the remainder as a key, how many buckets does that provide?
+
+_Answer_: Remainders will range from 0 - 99, thus the function will yield a 100 _Buckets_.
+
+## Sets
+
+_Sets_ are similar to _Lists_ in that it stores a collection of values, but with 2 key distinctions:
+
+*   The order of elements are not guaranteed.
+*   No duplicate elements are allowed.
+
+A typical implementation of _Sets_, called _HashSets_, uses [Hash functions](#hashfunctions) to store the elements. This type of _Set_ offers constant time performance ( $O(1)$ ) for basic operations like _add_, _remove_ and _contains_.
+
+## Hash Maps
+
+One of the main applications of _Hash functions_ are _Hash Maps_. Both the _key_ and _value_ are stored in the position provided by the function. Since keys in a _Map_ are part of a _Set_, they are unique, allowing the _Hash function_ to be designed in a way that gives each key its own bucket.
+
+### String keys
+
+A String can be converted into a number by using something like ASCII codes. Java favours large hash codes over the risk of _collisions_ by using _Hash function_ similar to this: ($s\[x\]$ would contain the ASCII code for the character in position x of the String):
+
+$$s\[0\]\\times 31^\\text{(n-1)} + s\[1\]\\times 31^\\text{(n-2)} +\\ ...\\ +s\[n-1\]$$
+
+A simple _Hash table_ implementation in python:
+
+MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", scale: 80, styles: {".MathJax": {"font-weight":"bold"}} } });
+
+In part 3 I will look at [trees](/tech-interview-cheatsheet-trees/).

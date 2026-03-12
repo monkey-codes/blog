@@ -1,0 +1,110 @@
+---
+title: "How To Setup Jenkins on AWS With Spot Fleet Slaves"
+description: "Build CI/CD infrastructure with Ansible and Cloudformation"
+pubDate: 2020-04-24
+heroImage: "/content/images/2020/04/jenkins_post_header-2.jpg"
+tags: ["DevOps","development"]
+---
+
+## Jenkins for CI/CD
+
+To deliver software projects successfully in today's ultra-competitive environments you require low cycle time to get changes into production while still maintaining high quality.  How can this be achieved?
+
+*   Build, deploy, test and release should be **Automated** and easily repeatable. It should be an engineering discipline, not an art.
+*   Changes should be **frequent**, this means smaller delta's between releases which in turn will reduce the risk of the release and make it easier to rollback.
+
+> “If it hurts, do it more frequently, and bring the pain forward”— Jez Humble
+
+Jenkins is a free, open-source tool that has been around for a long time, but don't let the dated interface fool you. It is a Swiss army knife in the CI/CD space. One of its biggest features is Pipeline as Code_._ Every project can commit a Jenkinsfile as part of the project's git repository that describes the build and deployment pipeline of the project. Jenkins can be configured to continuously scan your organisation's git repos for Jenkinsfile's and automatically setup pipelines for these projects.
+
+In this post we will look at how to setup private Jenkins CI/CD infrastructure on AWS.
+
+## Infrastructure as Code
+
+To ensure that the required infrastructure can be created in a repeatable manner this example will make use of _Cloudformation_ and _Ansible._ All the code should go into a git repository that provides a full audit trail of changes. This makes it easy to rollback changes and ensures that no drift occurs between what is deployed on AWS and what is in the infrastructure code.
+
+## Jenkins AMI
+
+Step one is to create an AMI that will form the base of both the Jenkins master and slave instances.  Only a handful of packages are required to be installed on the AMI namely: _Docker, Docker Compose, Java, Git, and AWS ECR Credentials helper_ to allow Jenkins to pull Docker images from a private ECR.
+
+This example will make use of _Packer_ and _Ansible_ to build the AMI. The _Packer_ config for the AMI uses Amazon Linux as a base image and _Ansible_ to provision the required packages:
+
+ami.json playbook.yml
+
+You will have to bootstrap this from your local machine the first time but after Jenkins is up and running this can be placed in a pipeline that will automatically build future changes to the AMI. Volume in a directory with the above files into a packer container to build the AMI.
+
+```bash
+$ docker run --rm -it --entrypoint="" -v $(pwd):/workspace \
+-v ~/.aws:/root/.aws \
+-w /workspace  hashicorp/packer:light packer build \
+-var 'playbook_file=playbook.yml' \
+-var 'aws_account_no=0000000000' \
+ami.json
+
+```
+
+## Jenkins Master
+
+Jenkins master can run on a small EC2 since all the jobs will be farmed out to on-demand spot fleet instances that be spun up and shut down as demand changes. Jenkins itself can run inside a Docker container based on the official image. Running Jenkins inside a Docker container makes upgrades and rollbacks of the Jenkins version easy.
+
+Customisations to the official image are limited to the following:
+
+*   Installing a self-signed certificate to ensure TLS between the load balancer and Jenkins.  
+*   Installing the Docker client to allow Jenkins to launch docker containers. Note that when we start Jenkins the host EC2 instance docker socket will be volumed into the container. This allows Jenkins to launch containers on the host from inside the container.
+*   Optionally include a custom.groovy and plugins.txt to configure Jenkins automatically
+
+Dockerfile
+
+For backups, we attach separate EBS storage to the EC2 instance and volume in the EBS mount point to the container under the JENKINS\_HOME directory. Making snapshots of the EBS volume will effectively backup build history and plugin installations.
+
+Initial bootstrapping of the Jenkins infrastructure will have to happen from your local PC but after that updates to the infrastructure can happen via a Jenkins pipeline, Jenkins updates its own infrastructure. The way this works is that you commit changes to the Jenkins infrastructure Cloudformation, which will be picked up and built by Jenkins. The cfn-init script that runs on the EC2 host will detect and perform the update and then restart the Jenkins docker container.
+
+Jenkins EC2 Cloudformation Resource
+
+A security group limits SSH access to Jenkins through a fixed CIDR block (Most likely from the IP of a Bastion host deployed in the public subnet) but allows HTTPS access from anywhere (0.0.0.0/0). Since Jenkins will be deployed in a private subnet this really limits access to anything else deployed in the private subnet. Traffic will route via an application load balancer to Jenkins.
+
+Jenkins Security Group
+
+Since Jenkins will be the central piece of infrastructure that deploys applications onto AWS infrastructure via Cloudformation, it needs certain AWS permissions to perform that action. Jenkins will get its permissions via a permissions policy attached to the IAM role assigned to the EC2 Host instance. I recommend starting with minimum permissions and as you run into deployment issues regarding permissions, updating the permission policy on the IAM Role ( in Cloudformation) and let the Jenkins pipeline take care of updating the infrastructure.
+
+Last but not least is adding a DNS record to Route53 for Jenkins as well as a load balancer target group and a host-based routing listener rule to forward HTTP requests to the Jenkins EC2 instance from the ALB.
+
+Load Balancer & DNS Configuration
+
+## Spot Fleet Slaves
+
+Using AWS spot fleet instances as slaves is a good way to keep costs down. The [ec2-fleet Jenkins plugin](https://plugins.jenkins.io/ec2-fleet/) can be used to manage demand for slave nodes. When the build queue grows the plugin will provision more spot instances if any are available up to a defined limit. When these slaves become idle for a given period it will be shut down.
+
+We use the same AMI for the slaves as for the master with one key difference, the slave agent will be running as a java process directly on the slave EC2 instance and from there the agent will launch docker containers as needed/defined by any given pipeline its been tasked with building.
+
+An EBS volume is also assigned to each slave that will be deleted upon termination. This is required as the default size of 8GB will be quickly consumed by the local cache of Docker images.
+
+Spot Fleet Request
+
+## Trigger Pipelines Using Web Hooks
+
+To automatically trigger a pipeline on Jenkins when a change is committed [git webhooks](https://dzone.com/articles/adding-a-github-webhook-in-your-jenkins-pipeline) can be used. There may be variations on this depending on whether you are using Github or Bitbucket.
+
+## Using Docker As Stage Agents
+
+To keep Jenkins robust and easy to upgrade I suggest limiting Jenkins plugins to an absolute minimum and relying on Docker images configured through the agent directive at the stage level of your pipeline (In the Jenkinsfile). In my experience, some Jenkins plugins can be flaky and break between upgrades so limiting the installation of plugins will make maintenance easier.
+
+Using Docker is a great way to include any specific build (think java, node maven, etc) or deployment tools needed for your project. It's easy to upgrade and rollback and does not affect the stability of Jenkins itself. Rely on official images from docker hub where possible for security reasons but you always have the option of rolling your own image if something specific is required.  Because the _AWS ECR Credentials helper_ is installed on the host EC2 instance, custom images can be pulled from a private ECR.  
+
+## Output of a Stage
+
+One common mistake in configuring pipelines is assuming that the output of one stage will be available in the next. This is not always true since Jenkins may execute each stage on a different slave. I have found that using an artifact repository like [nexus](https://www.sonatype.com/download-oss-sonatype) to be a good way of storing artifacts produced by a stage in a pipeline. It caters to many different repository types like maven and npm. It also supports storing binaries on S3 which keeps storage costs down.
+
+If a later stage depends on something produced earlier in the pipeline it can simply download it from nexus. Using the Jenkins build number as a version number for artifacts in nexus works well.
+
+To host your own private nexus instance, similar Cloudformation as described here for Jenkins can be used to host nexus, with the biggest difference running a nexus Docker container instead of a Jenkins one. (Things like the Spot Fleet request can be removed but you will need to add an s3 bucket for artifact storage.)
+
+## Custom Steps For Jenkinsfile
+
+To get code reuse between Jenkinsfiles, common steps can be extracted into a git repo and configured globally in Jenkins as a [shared library](https://jenkins.io/doc/book/pipeline/shared-libraries/). These custom steps can then be referenced across all pipelines.
+
+## Ansible with Cloudformation for Deployment
+
+I have found Cloudformation combined with Ansible is a good way to define infrastructure as code and to describe deployments on AWS. Ansible variables can be used to configure differences between environments (staging vs prod) and these variables can be passed using the Ansible Cloudformation module.
+
+In a microservices architecture, deployment between services and the required infrastructure will likely look the same. This can be extracted into an Ansible role. These common roles and environment variables can then be baked into a custom Docker image that gets used by the deployment stage in a pipeline. Each project can then commit its own Ansible playbook alongside the code to describe its deployment and required AWS resources (as a Cloudformation template). With this setup, you retain the flexibility to explicitly define the Cloudformation required for the service or to reference a common Ansible role should it be similar to other deployed services.

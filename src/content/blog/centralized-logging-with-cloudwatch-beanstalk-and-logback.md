@@ -1,0 +1,78 @@
+---
+title: "Centralized  Logging with Cloudwatch, Beanstalk and LogBack"
+description: "How to collect performance metrics, access events and general logs in a centralized place when deploying to Elastic Beanstalk."
+pubDate: 2016-09-03
+updatedDate: 2018-06-04
+heroImage: "/content/images/2016/08/logging_post_header.jpg"
+tags: ["development","Spring"]
+---
+
+Logging in the cloud is substantially different compared to a traditional hosting setup. The simplest and most widespread form is file based logging, where events are simply appended to a file and possibly rotated periodically. The main problem that arises with file based logging in a cloud environment is that instances get dynamically created and destroyed as demand fluctuates. In most cases the underlying filesystem of these dynamic instances is **ephemeral**, once the instance is destroyed, the filesystem together with the log files are lost. This post will explain how to configure _CloudWatch_ to collect application logs and store it in a centralized place.
+
+## Logging
+
+Application logging is often not used to its full potential. Under the worst of circumstances, it is used as a dumping ground of unstructured debug messages that are only used during development of a new feature or when hunting down production issues.
+
+A wealth of near real-time metrics can be unlocked by applying a small amount of effort and some discipline when configuring and using logging. These metrics, in turn, can be used to get feedback on the current state of an application and even be used to alarm when certain metrics fall outside of a predefined boundary. The key to unlocking this kind of information is by introducing a structure to log entries that can easily be processed by machines. Collecting these structured logging _events_ in a centralized place like [AWS Cloudwatch](https://aws.amazon.com/cloudwatch/) allows for effective processing and monitoring.
+
+## Logstash Format
+
+Below is a basic example of a logging _event_ in the Logstash format. Two important fields are expected as part of the message `@timestamp` which is a high precision timestamp of the event and `@version` that indicates the version of the Logstash JSON schema, any other field is valid. Depending on the backend that will consume these events, other restrictions to field names may apply. For instance the popular [ELK](https://www.elastic.co/webinars/introduction-elk-stack) stack uses ElasticSearch as backing store that does not allow `.` in the key name (`some.key` will not be allowed).
+
+### Useful Markers
+
+_Markers_ are extra fields that are included in the logging _event_. These _Markers_ simplify filtering of logging events, especially if multiple application logs are aggregated in a single place. Some useful Markers include but are not limited to application name, version, host name and IP.
+
+## Spring Boot with Logback and Logstash
+
+The [Logback Logstash Encoder](https://github.com/logstash/logstash-logback-encoder) enables [Logback](http://logback.qos.ch/) to encode logging events in the logstash event format. The required dependencies are:
+
+Logback can be configured through an XML or a Groovy file, the groovy being less verbose and more concise although it lacks certain features like the [SiftingAppender](http://logback.qos.ch/manual/groovy.html#sift). Logback will look for a `logback.groovy` (Note that its all lowercase!) at the root of the classpath.
+
+`LoggingTagsPropertyDefiner` reads properties from a file called `logging-tags.properties` on the classpath. By leveraging resource filtering in the build process through Maven or Gradle, properties like `appName` and `version` can be packaged into the application.
+
+`BeanStalkPropertyDefiner` will access the special meta information url in AWS EC2 ([http://169.254.169.254/latest/meta-data](http://169.254.169.254/latest/meta-data)) during startup and provide the host and instance level markers.
+
+## Access Logging
+
+Logging HTTP requests has many valuable benefits, it supports debugging, diagnosing security problems, playback for realistic load testing and numerous other use cases.
+
+An example of an access logging event in the logstash format:
+
+### Configuring Access Logging on Spring Boot
+
+Add the `ch.qos.logback:logback-access` dependency to the application classpath. The dependency includes a Tomcat `Valve` implementation that will log HTTP requests using Logback infrastructure. To configure the `Valve` in an embedded Spring Boot scenario the `TomcatContextCustomizer` can be used:
+
+The final step is to provide logback with the configuration to use the logstash format, this is done through `src/main/resources/conf/logback-access.xml`. At the time of writing there was no groovy configuration alternative. The configuration makes use of the same Logback `PropertyDefiners` to include Application and Beanstalk specific markers with every access logging event. Admittedly configuring the custom markers as JSON inside an XML tag is clumsy, the end result is still very useful.
+
+To maintain compatibility with the [ELK](https://www.elastic.co/webinars/introduction-elk-stack) stack the HTTP request fields names are overridden from `@fields.some_field` to `fields_some_field` because Elasticsearch (ELK) does not support `.` in a field name. [CloudWatch](https://aws.amazon.com/cloudwatch/) does not suffer from the same limitation.
+
+### Configuring Access Logging on a Traditional Tomcat Setup
+
+This post will not cover the traditional deployment scenario where a `WAR` file is deployed to an existing Tomcat container. A few things to watch out for include:
+
+*   The `ch.qos.logback:logback-access` together with the supporting `LoggingTagsPropertyDefiner` and `BeanStalkPropertyDefiner` classes need to be loaded by the root classloader, hence it needs to be placed in `${CATALINA_BASE}/lib`.
+*   The `logback-access.xml` cannot be packaged with the application, instead it needs to be placed in `${CATALINA_BASE}/conf`.
+*   The access logging `Valve` can be configured globally through `${CATALINA_BASE}/conf/server.xml` or per app through `META-INF/context.xml`.
+
+## Installing the CloudWatch Agent through .ebextensions
+
+[CloudWatch](https://aws.amazon.com/cloudwatch/) is a monitoring service offered by AWS that provides log aggregation, metric collection and application alarms. The [sample configuration](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.cloudwatchlogs.html) to install the CloudWatch Agent through [ebextensions](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/ebextensions.html), a mechanism provided by Beanstalk to customize the environment, works out of the box.
+
+The sample creates a Log Group for the application with log streams for every beanstalk instance running the application. Since every logging event will contain the instance id as marker, the CloudWatch configuration can be simplified to forward all instance logs to the same stream.
+
+### IAM Policy
+
+Installing the CloudWatch Agent requires certain permissions in the AWS environment. To grant the required privileges, create a new role in IAM that can be used as an [instance profile](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html) for the Beanstalk EC2 instance. The new role should be based on `aws-elasticbeanstalk-ec2-role` and include all the default attached policies. A very unrestricted sample of the custom policy to grant the required permissions to the CloudWatch Agent could look like:
+
+## Perf4j
+
+[Perf4j](https://github.com/perf4j/perf4j) provides a simple mechanism to extract performance metrics out of an application. Based on an AOP aspect, it measures response time of any method annotated with `@Profiled` annotation and logs the event to the underlying framework. Combined with the `AsyncCoalescingStatisticsAppender` these statistics will be aggregated over a constant timeframe (like 30s in the sample) before being emitted to the downstream logging appenders.
+
+The `LogstashAsyncCoalescingStatisticsAppender` extends the `AsyncCoalescingStatisticsAppender` and breaks down the summary of statistics into individual logging events complete with markers for _max_, _min_, _mean_, _count_ and _standard deviation_.
+
+A sample performance event would look like:
+
+To create a custom metric in CloudWatch that tracks the average response time of the `HelloWorldController` the following can be added to ebextensions.
+
+Sample code is available on [github.](https://github.com/monkey-codes/cloudwatch-logging)

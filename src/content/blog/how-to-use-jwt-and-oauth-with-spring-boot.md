@@ -1,0 +1,114 @@
+---
+title: "How to use JWT and OAuth with Spring Boot"
+description: "Do you need to setup Single Sign-on (SSO) for a microservice architecture? "
+pubDate: 2016-12-01
+updatedDate: 2018-06-04
+heroImage: "/content/images/2016/12/boot_auth_post_header.jpg"
+tags: ["Spring","development","API","Groovy","Gradle"]
+---
+
+Unsure how to share authentication state between stateless microservices? This post will try to answer these questions using Spring Boot, Spring Security (OAuth2) and JSON Web Tokens (JWT).
+
+## OAuth
+
+OAuth defines a standard contract of providing token based authentication and authorization on the internet.
+
+[It defines a protocol](http://stackoverflow.com/questions/4201431/what-exactly-is-oauth-open-authorization) for notifying a **resource provider** ( Facebook ) that the **resource owner** ( you ) grants **access** to their information ( e.g your email ) to a **third-party application** ( e.g a Web App )
+
+The OAuth standard defines several [_Grant Flows_](https://alexbilbie.com/guide-to-oauth-2-grants/), this post will focus on the [Authorization Code Grant](http://tools.ietf.org/html/rfc6749#section-4.1). The flow is well suited to traditional web applications that has server side session storage. Modern single page javascript applications will be better suited to the [Implicit Grant](https://tools.ietf.org/html/rfc6749#section-4.2), which is not covered here.
+
+### Authorization Code Grant
+
+![authorization code flow](https://res.cloudinary.com/monkey-codes/image/upload/v1480566041/boot-auth/oauth-auth-code_c4oi91.svg)
+
+The diagram depicts the interaction between the 3 main components of the system, _Auth Server_, _Web App_ and a _Microservice_. A JWT token encapsulates the identity of the authenticated user and is only passed between the system components, never to the browser. The token is stored in the HTTP Session of the _Web App_ which is maintained through a traditional session id Cookie.
+
+Strictly speaking the _Authorization Code Grant_ flow is complete after the `secret_code` has been exchanged for a JWT. The rest of the diagram shows how the _Web App_ proxies requests to the _Microservice_ and passes the JWT along.
+
+The optional "authorize" step is useful in cases where the _Resource Provider_ (Facebook) cannot vouch for the credibility of the 3rd party application requesting access, thereby delegating the decision to the _Resource Owner_ (the User). In some cases, it also provides an opportunity to the _Resource Owner_ to review what information is requested by the application.
+
+## JWT
+
+[JWT](https://jwt.io/introduction/) is an open standard for securely sending information (Claims) between parties. The information can be verified and trusted because it is digitally signed, using a public / private key pair in this instance.
+
+[JWT consists of 3 parts](https://scotch.io/tutorials/the-anatomy-of-a-json-web-token) separated by a `.`, the _header_, _payload_ and the _signature_.
+
+The payload is a combination of:
+
+*   [_Registered Claims_](https://tools.ietf.org/html/draft-jones-json-web-token-07#section-4.1) - keys reserved by the JWT Spec.
+*   _Public Claims_ which can be defined by the application.
+
+Below is a rough example of how JWT is composed:
+
+## Sample System Architecture
+
+![boot auth architecture](https://res.cloudinary.com/monkey-codes/image/upload/v1480053775/boot-auth/boot-auth-architecture_fct4nj.svg)
+
+### Auth Server
+
+The _Auth Server_ will provide authentication and play the role of the _Resource Provider_. A Java keystore (Public + Private keys) is packaged into the server and is used to sign the JWT.
+
+[The approval step](http://stackoverflow.com/questions/29696004/skip-oauth-user-approval-in-spring-boot-oauth2) is skipped since interaction is between trusted applications.
+
+Generate the keystore in `auth-server/src/main/resources`:
+
+```
+$ keytool -genkeypair -alias jwt -keyalg RSA -dname "CN=jwt, L=Brisbane, S=Brisbane, C=AU" -keypass mySecretKey -keystore jwt.jks -storepass mySecretKey
+
+```
+
+The Spring context configuration for the _Auth Server_ consists of two parts, the `WebSecurityConfig` and `OAuth2Configuration`.
+
+`WebSecurityConfig` configures a basic form based login page. Furthermore it secures all OAuth endpoints exposed by the _Auth Server_. For simplicity's sake an in memory store of users is also included.
+
+`OAuth2Configuration` configures the required OAuth endpoints for the [Authorization Code Grant](http://tools.ietf.org/html/rfc6749#section-4.1) flow. Additionally it takes care of setting up the JWT token store and the key pair used to sign the tokens.
+
+### Web App
+
+The Stateful _Web App_ hosts the view (HTML,JS and CSS) of the application. The default, in memory, implementation of HTTP Session is used to store JWT Tokens.
+
+As with the _Microservice_, this app contains a shared public key to verify the signature on the JWT.
+
+The role of an [API Gateway](http://microservices.io/patterns/apigateway.html) is provided by a [ZUUL Proxy](https://github.com/Netflix/zuul) and has a dual purpose:
+
+*   Automatically attach the JWT to the `authorization` header before proxying an API request
+*   Prevent the need for [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) configuration between the browser and the _Microservice_.
+
+Both the ZUUL Proxy and the public key can be configured in `src/main/resources/application.yml`
+
+To extract the public key from the keystore created for the _Auth Server_ (keystore password is 'mySecretKey'):
+
+```
+$ keytool -list -rfc --keystore boot-auth-server/src/main/resources/jwt.jks | openssl x509 -inform pem -pubkey
+
+```
+
+and the Spring configuration:
+
+### Microservice
+
+The _Microservice_ is a stateless application that exposes a single API endpoint. Invoking the endpoint will produce JSON with a random UUID and the name of the current authenticated user. This is automatically extracted from the JWT in the `authorization` header.
+
+The _Microservice_ also demonstrates authorization, by only allowing users with the `ROLE_READER` authority to access the resource.
+
+Spring configuration:
+
+## Running the Sample Application
+
+All the code for the sample application is hosted on [GitHub](https://github.com/monkey-codes/spring-boot-authentication) and can be run using gradle.
+
+```
+$ git clone git@github.com:monkey-codes/spring-boot-authentication.git
+$ cd spring-boot-authentication
+$ ./gradlew bootRun --parallel
+
+```
+
+_Web App_ starts at `http://localhost:8080:/web-app`
+
+## References
+
+[http://stytex.de/blog/2016/02/01/spring-cloud-security-with-oauth2/](http://stytex.de/blog/2016/02/01/spring-cloud-security-with-oauth2/)  
+[https://spring.io/guides/tutorials/spring-boot-oauth2/](https://spring.io/guides/tutorials/spring-boot-oauth2/)  
+[https://spring.io/blog/2015/02/03/sso-with-oauth2-angular-js-and-spring-security-part-v](https://spring.io/blog/2015/02/03/sso-with-oauth2-angular-js-and-spring-security-part-v)  
+[https://scotch.io/tutorials/the-anatomy-of-a-json-web-token](https://scotch.io/tutorials/the-anatomy-of-a-json-web-token)

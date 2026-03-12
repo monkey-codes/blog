@@ -1,0 +1,72 @@
+---
+title: "How to Gather Performance Metrics in Spring Batch"
+description: "This post will look at two ways to extract performance metrics out of a Spring Batch Job using Dropwizard Metrics."
+pubDate: 2018-07-09
+heroImage: "/content/images/2018/07/spring_batch_metrics.jpg"
+tags: ["Spring","development"]
+---
+
+This post will look at 2 ways to extract performance metrics out of a [Spring Batch Job](https://projects.spring.io/spring-batch/) using [Dropwizard Metrics](https://metrics.dropwizard.io/4.0.0/). The solution discussed here will produce _Reader_, _Processor_ and _Writer_ throughput and mean times in addition to counters for skipped items by logging the metrics in a pre-configured interval to a log file. Armed with this information you will be able to answer questions like: _Is the job running?, How long will it take?, Which part is taking up the most time?_ and many more without having to wait until the job completes.
+
+## Two approaches to the problem
+
+The solution relies on [Dropwizard Metrics](https://metrics.dropwizard.io/4.0.0/) to perform the measurements and periodically report the metrics. The code samples are concerned with **how** to configure Dropwizard to collect metrics.
+
+The simplest approach is applying the [Decorator Pattern](https://en.wikipedia.org/wiki/Decorator_pattern) to every _Reader_, _Processor_ and _Writer_ in the job by wrapping each of the components with Classes that configure the Dropwizard timers. The second approach combines Spring Batch life cycle event listeners and a [State Pattern](https://en.wikipedia.org/wiki/State_pattern) to produce the desired metrics.
+
+In both cases the metrics will be logged every 30s via the [Slf4jReporter provided by Dropwizard](https://metrics.dropwizard.io/4.0.0/manual/core.html#man-core-reporters-slf4j) to the _codes.monkey.batchstats.eventdriven.StatsListener_ logger.
+
+### Decorator Driven Approach
+
+The straight forward approach is to wrap the existing _Reader, Processor_ and _Writer_ with their corresponding decorators _MetricReader_, _MetricProcessor_ and _MetricWriter_ implementations. A _DecoratorFactory_ simplifies the configuration.
+
+![decorator class diagram](https://res.cloudinary.com/monkey-codes/image/upload/v1527135098/9bd14cf1_bc1qr1.png)
+
+All metrics are namespaced based on the job and step it belongs to, for example, given _sampleJob_ with a _sampleStep_, will produces log entries similar to:
+
+The sample implementations of the _MetricReader_, _MetricProcessor_ and _MetricWriter_ are not suitable for a multi threaded batch job, however moving the _StatsNamespace_ field in each of them to a _ThreadLocal_ variable should be enough to get it working in a multi threaded job. (This has not been tested!)
+
+### Event Driven Approach
+
+The event driven approach relies on the life cycle events built into Spring Batch. Typically timers will start when the metric listener receives a _before\*_ event, like _beforeRead_, and stop on _afterRead_. Unfortunately these events are not always balanced. One example of this is during the last read Spring Batch will dispatch a _beforeRead_ followed by the _Reader_ producing a null value. The next event produced by the framework is a _beforeProcess_, leaving the initial _beforeRead_ without the opposite _afterRead_ to signal the read timer to stop. Applying the State Pattern solves the problem to a large degree with a few caveats:
+
+*   Jobs must have a _ItemProcessor_, the state machine relies on some of the processor events to produce synthetic events that in turn provides a more balanced interface to the timers. A _PassThroughItemProcessor_ can be used in situations where the job does not need to do any processing.
+*   Once a _process_ or _write_ error happens in a chunk, the subsequent re-processing of the chunk **will not emit processing or write events.** The main reasons for this are:
+    *   Emitting processing events in this state may yield process counts higher than the number of read items because if a chunk contains more than 1 process error the same item may be processed several times while the framework whittles down the chunk to only the items that pass processing.
+    *   Emitting write events will also skew the numbers, since write events in this case will happen on smaller chunks. The _ItemWriter_ will be called with a chunk of 1 to figure out where in the original chunk the write error occurred.
+
+State diagram describing spring batch job state transitions:
+
+![State Diagram](https://res.cloudinary.com/monkey-codes/image/upload/v1527153288/Batch_State_Machine_xhxmcs.png)
+
+#### Parallel Processing
+
+With a few caveats, collecting stats in a [multi threaded step](https://docs.spring.io/spring-batch/trunk/reference/html/scalability.html#multithreadedStep) is possible but does add considerable complexity. The first obvious limitation, imposed by the framework itself, is that the _Reader_, _Processor_ and _Writer_ all need to be thread-safe. Parallel processing is implemented by running each _Chunk_ in a separate thread, this means that a copy of the state machine described above is required for each thread. Failing to do this will cause the single state machine to receive events from different threads in a nonsensical order.
+
+The _ParallelProcessingStatsListener_ solves the problem by storing an instance of the state machine in a _ThreadLocal_ variable every time a _beforeChunk_ event is received. One of the reasons the event driven approach is limited in what events can be produced during chunk reprocessing is that the reprocessing does not necessarily happen in the same thread as what the original chunk processing failed in.
+
+## Reporting
+
+Ideally the log file produced by the above configuration can be scooped up by some log aggregation infrastructure like [ELK](https://www.elastic.co/elk-stack) and reports can be pulled from there. In cases where that is not an option you can use the _HtmlReportJobExecutionListener_ which will produce a self contained HTML report once the job has completed.
+
+![Sample HTML Report](https://res.cloudinary.com/monkey-codes/image/upload/v1527829338/batch_stats_html_report.png)
+
+## Conclusion
+
+Using the decorator driven approach is arguably the simplest way to get the majority of important metrics out of your batch job. I would only consider the event driven approach if there is a requirement to monitor chunk processing times or count errors/skipped items. Maybe a combination of the two approaches, using decorators for read, processing and write metrics combined with events for counting skips and errors or capturing step/job metrics will yield a lot of detail without all of the complexity.
+
+## Sample Code Setup
+
+Sample code can be found on [GitHub](https://github.com/monkey-codes/spring-batch-metrics). The **gradle build** will expect **node 8.9.1** and **yarn** to be installed on the system.
+
+```bash
+$ git clone https://github.com/monkey-codes/spring-batch-metrics.git
+$ cd spring-batch-metrics
+# if you are using nvm
+$ nvm use 8.9.1
+$ ./gradlew clean build
+$ ./gradlew bootRun -Dspring.batch.job.names=single.thread.decorator.driven.job -Dcodes.monkey.metric.output.dir=$(pwd)/build
+# to view the html report generated in the tmp folder
+$ open ./build/report.html
+
+```

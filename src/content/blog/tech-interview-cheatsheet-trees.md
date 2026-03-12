@@ -1,0 +1,121 @@
+---
+title: "Tech Interview CheatSheet - Trees"
+description: "Overview of Trees, including depth first search (DFS), breadth first search (BFS), Binary Search Trees & Self Balancing Trees."
+pubDate: 2017-05-27
+updatedDate: 2018-06-04
+heroImage: "/content/images/2017/05/tech_interview_cheatsheet-2.jpg"
+tags: ["Algorithms","development"]
+---
+
+In part 1 of this series I looked at [common search and sort algorithms used on lists](/tech-interview-cheatsheet-lists-search-sort/). Part 2 focused on [hash functions, sets and maps](/tech-interview-cheatsheet-maps-hashing/). In this post I will look at _trees_, _depth and breadth first search_, _binary search trees_ and _self balancing trees_.
+
+## Basic Terminology
+
+A _tree_ is essentially an extension of a [linked list](/tech-interview-cheatsheet-lists-search-sort/#linkedlists). It consists of a set of connected elements, called _nodes_. In contrast to _linked lists_ a _node_ can be connected to multiple other _nodes_ but there can be no cycles. A cycle is more than 1 way to get to a node. The first element is called the _root_ and elements that contain no _descendants_ are called _leaf nodes_. The connections between _nodes_ are called _edges_ and a group of _edges_ is called a _path_
+
+MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", scale: 80, styles: {".MathJax": {"font-weight":"bold"}} } });
+
+_Levels_ describe how many connections it takes to reach the _root_, which resides at level 1. The _height_ of a _node_ describes the number of _edges_ between it and the furthest _leaf node_. A _leaf node_ will always have a height of 0. On the flip side, the _depth_ of a _node_ is the number _edges_ to the _root node_.
+
+![wide](https://res.cloudinary.com/monkey-codes/image/upload/v1494557528/algorithms/Screen_Shot_2017-05-12_at_12.49.59_pm_z5ww81.png)
+
+## Tree Traversal
+
+There are 2 types of traversal techniques, _depth first search (DFS)_ and _breadth first search (BFS)_.
+
+### Depth First Search
+
+_DFS_ prioritises searching down child nodes before exploring other nodes on the same level (_siblings_). Several DFS algorithms exist:
+
+#### Pre-Order DFS
+
+This algorithm first checks the node before visiting its children. It starts by visiting the left child and keeps going left, checking off nodes as it goes, until a leaf node is reached. At this point you step back to the parent and traverse to the right child.
+
+#### In-Order DFS
+
+Similar to Pre-Order it traverses down the left first but only checks a node once it has reached a leaf node. Then returns to the parent to check it off before traversing down the right. Its called "In-Order" because it traverses in order from left to right.
+
+#### Post-Order DFS
+
+Post-Order does not check off a node until all of its children have been checked off. Move down the left side until you reach a leaf node then back up and to the right before checking off the parent node.
+
+### Breadth First Search
+
+_BFS_ explores all the nodes at the same level before traversing deeper into the tree. _Level order traversal_ is a BFS algorithm that conventionally starts on the left and moves to the right.
+
+## Search, Insert & Delete
+
+A Binary tree has at most 2 children and no real order. Searching the tree using either DFS or BFS happens in linear time, $O(n)$.
+
+Inserting a node when there is no order in the tree is done by traversing the tree until an open position is found. Worst case is when the deepest path in the tree is picked to traverse first. In that case you will travel through the number of nodes equal to the _height_ of the tree. Each level of a tree has the capacity to store nodes equivalent to a power of 2, each level can have twice as many nodes as the level above. Insertion can happen in $O(log(n))$ time, since that defines the height of the tree.
+
+When deleting a node, the children of that node should be considered, 3 potential scenarios exist:
+
+*   _The target node has only 1 child_ - Simply promote the child to the position of the target.
+*   _The target node has 2 children_ - Promote either to the target position.
+*   _The target node's children have children_ - Traverse until a leaf node is found and promote it to the target position.
+
+## Binary Search Trees (BST)
+
+Binary search trees define some order to the nodes. Every child on the left of a node is smaller than the current node and every child on the right is bigger. ($ \\text{left\_child} \\lt \\text{current\_node} \\lt \\text{right\_child}$). This characteristic of BST's enables quick search by comparing the target number to a node and moving left if its smaller or right if its bigger. Search complexity is equal to the height of the tree, $O(log(n))$. The same applies for insertion.
+
+A complication that can arise is when the tree is _unbalanced_. An _unbalanced BST_ has a distribution of nodes that are skewed to one direction, worst case being simply a linked list (all the nodes are on one side). In that scenario search will happen in linear time, $O(n)$.
+
+## Self-Balancing Trees
+
+A _Self-Balancing Tree_ is a BST that tries to minimize the number of levels it uses by applying an algorithm during insertion and deletion to keep itself balanced. The most common of these are _Red-Black Trees_.
+
+### Red-Black Tree Rules
+
+Since a Red-Black tree is still a BST, all of the BST rules apply in addition to the following:
+
+**Rule 1:** Each node must have an additional colour property which is either _red_ or _black_.
+
+**Rule 2** All Leaf Nodes must _have Black null leaf nodes_. This could be on both right and left or just left or right.
+
+**Rule 3** If a node is red, all its children must be black.
+
+**Rule 4 (Optional)** Root node must be black.
+
+**Rule 5** The path from a node to all its descendant null nodes must contain the same number of black nodes.
+
+### Insertion
+
+Insertion is done by inserting a red node (following normal BST rules) in the tree and then recognising which of the following scenarios apply to the current state of the tree (Note that applying one case could immediately trigger another case):
+
+*   **Case 1:** Inserting the first node.
+*   Change the colour to black since its the root node.
+*   Add 2 black null leaf nodes
+*   **Case 2:** Adding a red node where parent is black.
+*   Since a red node is being added, Rule 5 is not violated.
+*   Add 2 black null leaf nodes
+*   **Case 3:** Adding a red node where the parent is red.
+*   If the parent and its sibling are red, change their colour to black and change the grandparent to red. This maintains the number of black nodes in a path.
+*   Add 2 black null leaf nodes
+*   If the rules are violated by changing the grandparent, you can treat it as a newly inserted element and apply the rules.
+*   **Case 4:** Adding a red node where the parent is red and sibling is black. The parent is on the opposite side of the child ( inserted node is a right child and the parent is a left child)
+*   Perform a left rotation
+*   **Case 5:** Adding a red node where the parent is red and its sibling is black, but both the parent and the inserted node are on the same side (both left or right children)
+*   Suppose both parent and inserted node are on the left, rotate parent to the right and switch the colour.
+
+Worst case scenario for insertion happens in $O(log(n))$.
+
+Try out [this great tool](http://tommikaikkonen.github.io/rbtree/) to practice applying these rules.
+
+## Heaps
+
+A _heap_ is a kind of tree where the elements are arranged by increasing (_Min heap_) or decreasing (_Max heap_) order, such that the root element is either the min or max value. This allows lookup of the root node (_peek_) to be in $O(1)$. In a max heap scenario a node must always be greater than its children, the opposite applies for a min heap. In a heap each node can have more than 2 children, but it must always be a _complete tree_, meaning that all the levels are full except potentially the last level. Values are added from the left to the right.
+
+Searching a heap cannot use comparison to decide which way to traverse, worst case is that the entire tree must be traversed which is a linear operation, $O(n)$.
+
+### Heapify & Extract
+
+_Heapify_ is an operation used during insertion. Start by adding a new value to the next open spot, then compare its value to the parent, swapping if its larger (max heap scenario). Repeat until the new value is in the right position.
+
+_Extract_ operation is applied when the root is removed. Find the right most leaf and place it in the root position. Then compare it to its children and swap where necessary.
+
+Worst case of both _heapify_ and _extract_ is when a node needs to move all the way up or down the tree, which will result in $O(log(n))$ time complexity.
+
+## References
+
+[https://www.cs.usfca.edu/~galles/visualization/RedBlack.html](https://www.cs.usfca.edu/~galles/visualization/RedBlack.html)

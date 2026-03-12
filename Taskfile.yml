@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start the Astro dev server
+    cmd: pnpm dev
+
+  build:
+    desc: Build the static site
+    cmd: pnpm build
+
+  preview:
+    desc: Preview the built site
+    cmd: pnpm preview
+
+  migrate:
+    desc: Migrate Ghost posts to Astro content
+    cmd: npx tsx scripts/migrate-ghost.ts {{.CLI_ARGS}}
