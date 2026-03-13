@@ -13,17 +13,19 @@ interface Heading {
 }
 
 type Props = CollectionEntry<'blog'>['data'] & {
+	slug?: string;
 	headings?: Heading[];
 	hideMetadata?: boolean;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [], headings = [], hideMetadata = false } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [], headings = [], hideMetadata = false, slug } = Astro.props;
+const ogImage = slug ? new URL(`/og/${slug}.png`, Astro.site).href : undefined;
 const hasHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3).length >= 2;
 ---
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description} image={ogImage} />
 	</head>
 
 	<body>
