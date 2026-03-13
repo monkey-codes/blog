@@ -1,0 +1,96 @@
+---
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
+
+interface Props {
+	headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const shouldRender = filteredHeadings.length >= 2;
+---
+
+{shouldRender && (
+	<nav class="toc-nav">
+		{/* Mobile: collapsible */}
+		<details class="toc-mobile lg:hidden mb-6 border border-border-subtle rounded-lg">
+			<summary class="cursor-pointer px-4 py-3 font-mono text-xs text-text-muted uppercase tracking-wider select-none">
+				Table of Contents
+			</summary>
+			<ul class="px-4 pb-4 space-y-1.5">
+				{filteredHeadings.map((h) => (
+					<li class:list={[h.depth === 3 && 'ml-4']}>
+						<a
+							href={`#${h.slug}`}
+							class="toc-link font-mono text-xs text-text-muted hover:text-accent no-underline transition-colors block py-0.5"
+							data-slug={h.slug}
+						>
+							{h.text}
+						</a>
+					</li>
+				))}
+			</ul>
+		</details>
+
+		{/* Desktop: sticky sidebar */}
+		<div class="toc-desktop hidden lg:block">
+			<p class="font-mono text-xs text-text-muted uppercase tracking-wider mb-3">On this page</p>
+			<ul class="space-y-1.5">
+				{filteredHeadings.map((h) => (
+					<li class:list={[h.depth === 3 && 'ml-4']}>
+						<a
+							href={`#${h.slug}`}
+							class="toc-link font-mono text-xs text-text-muted hover:text-accent no-underline transition-colors block py-0.5 border-l-2 border-transparent pl-3"
+							data-slug={h.slug}
+						>
+							{h.text}
+						</a>
+					</li>
+				))}
+			</ul>
+		</div>
+	</nav>
+)}
+
+<script>
+	function initTOC() {
+		const links = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
+		if (links.length === 0) return;
+
+		const slugs = Array.from(links).map((l) => l.dataset.slug!);
+		const headingElements = slugs
+			.map((slug) => document.getElementById(slug))
+			.filter(Boolean) as HTMLElement[];
+
+		if (headingElements.length === 0) return;
+
+		let current = slugs[0];
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						current = entry.target.id;
+					}
+				}
+				links.forEach((link) => {
+					const isActive = link.dataset.slug === current;
+					link.classList.toggle('text-accent', isActive);
+					link.classList.toggle('text-text-muted', !isActive);
+					link.classList.toggle('border-accent', isActive);
+					link.classList.toggle('border-transparent', !isActive);
+				});
+			},
+			{ rootMargin: '0px 0px -70% 0px', threshold: 0 }
+		);
+
+		headingElements.forEach((el) => observer.observe(el));
+	}
+
+	initTOC();
+	document.addEventListener('astro:after-swap', initTOC);
+</script>
