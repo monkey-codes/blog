@@ -164,6 +164,9 @@
   .prose img {
     border-radius: var(--radius-lg);
     margin: 2rem 0;
+    background-color: #e8e6e3;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-subtle);
   }
 
   .prose pre {
