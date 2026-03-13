@@ -1,155 +1,198 @@
-/*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+@import "tailwindcss";
 
-:root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--box-shadow:
-		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+@theme {
+  --color-bg-primary: #0f1117;
+  --color-bg-secondary: #161922;
+  --color-bg-card: #1c1f2e;
+  --color-bg-card-hover: #232740;
+  --color-border-subtle: #2a2d3e;
+  --color-border-hover: #3d415a;
+  --color-text-primary: #e8e6e3;
+  --color-text-secondary: #9b9aa0;
+  --color-text-muted: #6b6a70;
+  --color-accent: #e8943a;
+  --color-accent-hover: #f0a54e;
+  --color-accent-subtle: rgba(232, 148, 58, 0.12);
+  --color-accent-glow: rgba(232, 148, 58, 0.06);
+  --color-tag-bg: rgba(232, 148, 58, 0.1);
+  --color-tag-text: #d4893a;
+  --color-tag-border: rgba(232, 148, 58, 0.2);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
-@font-face {
-	font-family: "Atkinson";
-	src: url("/fonts/atkinson-regular.woff") format("woff");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "Atkinson";
-	src: url("/fonts/atkinson-bold.woff") format("woff");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-body {
-	font-family: "Atkinson", sans-serif;
-	margin: 0;
-	padding: 0;
-	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 20px;
-	line-height: 1.7;
-}
-main {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
-}
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
-	line-height: 1.2;
-}
-h1 {
-	font-size: 3.052em;
-}
-h2 {
-	font-size: 2.441em;
-}
-h3 {
-	font-size: 1.953em;
-}
-h4 {
-	font-size: 1.563em;
-}
-h5 {
-	font-size: 1.25em;
-}
-strong,
-b {
-	font-weight: 700;
-}
-a {
-	color: var(--accent);
-}
-a:hover {
-	color: var(--accent);
-}
-p {
-	margin-bottom: 1em;
-}
-.prose p {
-	margin-bottom: 2em;
-}
-textarea {
-	width: 100%;
-	font-size: 16px;
-}
-input {
-	font-size: 16px;
-}
-table {
-	width: 100%;
-}
-img {
-	max-width: 100%;
-	height: auto;
-	border-radius: 8px;
-}
-code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
-}
-pre {
-	padding: 1.5em;
-	border-radius: 8px;
-}
-pre > code {
-	all: unset;
-}
-blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
-}
-hr {
-	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
-}
-@media (max-width: 720px) {
-	body {
-		font-size: 18px;
-	}
-	main {
-		padding: 1em;
-	}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text-primary);
+    line-height: 1.2;
+  }
+
+  h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.03em; }
+  h2 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+  h3 { font-size: 1.375rem; font-weight: 600; }
+  h4 { font-size: 1.125rem; font-weight: 600; }
+  h5 { font-size: 1rem; font-weight: 600; }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    padding: 0.15em 0.4em;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 4px;
+    color: var(--color-accent);
+  }
+
+  pre {
+    padding: 1.5em;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  pre > code {
+    all: unset;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+
+  blockquote {
+    border-left: 4px solid var(--color-accent);
+    padding: 0 0 0 1.25rem;
+    margin: 1.5rem 0;
+    color: var(--color-text-secondary);
+    font-size: 1.0625rem;
+    font-style: italic;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border-subtle);
+    margin: 2rem 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    text-align: left;
+  }
+
+  th {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Prose styling for blog post content */
+  .prose {
+    color: var(--color-text-primary);
+    line-height: 1.75;
+  }
+
+  .prose p {
+    margin-bottom: 1.5em;
+  }
+
+  .prose h2 {
+    margin-top: 2.5em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose h3 {
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+  }
+
+  .prose ul, .prose ol {
+    padding-left: 1.5em;
+    margin-bottom: 1.5em;
+  }
+
+  .prose li {
+    margin-bottom: 0.5em;
+  }
+
+  .prose a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .prose img {
+    border-radius: var(--radius-lg);
+    margin: 2rem 0;
+  }
+
+  .prose pre {
+    margin: 1.5em 0;
+  }
+
+  .prose blockquote {
+    margin: 1.5em 0;
+  }
+
+  .prose mjx-container[display="true"] {
+    overflow-x: auto;
+    padding: 0.25rem 0;
+  }
+
+  .prose mjx-container[jax="SVG"] svg {
+    display: inline;
+    color: var(--color-text-primary);
+  }
 }
 
 .sr-only {
-	border: 0;
-	padding: 0;
-	margin: 0;
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
-	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
-	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
-	white-space: nowrap;
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

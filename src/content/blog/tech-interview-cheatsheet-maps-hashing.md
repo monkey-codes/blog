@@ -54,6 +54,4 @@ $$s\[0\]\\times 31^\\text{(n-1)} + s\[1\]\\times 31^\\text{(n-2)} +\\ ...\\ +s\[
 
 A simple _Hash table_ implementation in python:
 
-MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", scale: 80, styles: {".MathJax": {"font-weight":"bold"}} } });
-
 In part 3 I will look at [trees](/tech-interview-cheatsheet-trees/).

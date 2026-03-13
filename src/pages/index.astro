@@ -1,8 +1,30 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+// Collect unique tags with counts
+const tagCounts = new Map<string, number>();
+posts.forEach((post) => {
+	post.data.tags.forEach((tag) => {
+		tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+	});
+});
+const sortedTags = [...tagCounts.entries()].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1]);
+
+// Reading time helper
+function readingTime(body: string): string {
+	const words = body.split(/\s+/).length;
+	const mins = Math.max(1, Math.round(words / 200));
+	return `${mins} min read`;
+}
 ---
 
 <!doctype html>
@@ -12,38 +34,200 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 	</head>
 	<body>
 		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
+
+		<!-- Hero -->
+		<header class="max-w-[1120px] mx-auto px-6 pt-14 pb-8">
+			<h1 class="text-[2rem] font-bold tracking-tight leading-tight mb-3">
+				Code, Craft & <span class="text-accent">Lessons Learned</span>
+			</h1>
+			<p class="text-[1.0625rem] text-text-secondary max-w-[540px] leading-relaxed">
+				Thoughts on software engineering, architecture patterns, and the things I wish someone told me earlier in my career.
 			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+		</header>
+
+		<!-- Tag filter toggle button -->
+		<button
+			id="filter-toggle"
+			class="fixed top-20 left-4 z-50 flex items-center gap-2 bg-bg-secondary border border-border-subtle rounded-full px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:border-border-hover transition-all cursor-pointer"
+			aria-label="Toggle tag filter"
+		>
+			<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+			</svg>
+			<span class="hidden sm:inline">Filter</span>
+		</button>
+
+		<!-- Tag filter overlay -->
+		<div id="filter-overlay" class="fixed inset-0 bg-black/50 z-30 hidden"></div>
+
+		<!-- Tag filter panel -->
+		<aside
+			id="filter-panel"
+			class="fixed top-16 left-0 bottom-0 w-72 bg-bg-secondary border-r border-border-subtle z-50 -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto"
+		>
+			<div class="p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h3 class="text-xs font-semibold uppercase tracking-widest text-text-muted">Filter by Tag</h3>
+					<button id="filter-close" class="text-text-muted hover:text-text-primary transition-colors bg-transparent border-none cursor-pointer">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+				<button
+					class="tag-filter-btn flex justify-between w-full px-3 py-2 rounded-md text-text-secondary hover:bg-accent-subtle hover:text-accent text-sm transition-colors mb-1 bg-transparent border-none cursor-pointer text-left"
+					data-tag=""
+				>
+					<span>All posts</span>
+					<span class="font-mono text-xs text-text-muted">{posts.length}</span>
+				</button>
+				{sortedTags.map(([tag, count]) => (
+					<button
+						class="tag-filter-btn flex justify-between w-full px-3 py-2 rounded-md text-text-secondary hover:bg-accent-subtle hover:text-accent text-sm transition-colors mb-1 bg-transparent border-none cursor-pointer text-left"
+						data-tag={tag}
+					>
+						<span>{tag}</span>
+						<span class="font-mono text-xs text-text-muted">{count}</span>
+					</button>
+				))}
+			</div>
+		</aside>
+
+		<!-- Post list -->
+		<main class="max-w-[1120px] mx-auto px-6 pb-12">
+			<div id="active-filter" class="hidden mb-6 flex items-center gap-3">
+				<span class="text-sm text-text-muted">Filtered by:</span>
+				<span id="active-filter-tag" class="font-mono text-xs text-tag-text bg-tag-bg border border-tag-border px-2 py-0.5 rounded"></span>
+				<button id="clear-filter" class="text-xs text-text-muted hover:text-accent transition-colors bg-transparent border-none cursor-pointer">&times; Clear</button>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				{posts.map((post) => (
+					<article
+						class="post-card bg-bg-card border border-border-subtle rounded-lg p-7 mb-4 hover:bg-bg-card-hover hover:border-border-hover hover:-translate-y-px transition-all"
+						data-tags={post.data.tags.join(',')}
+					>
+						<div class="flex items-center gap-3 mb-3 font-mono text-xs text-text-muted">
+							{post.data.tags[0] && (
+								<span class="font-mono text-[0.6875rem] font-medium uppercase tracking-wider text-accent bg-accent-subtle px-2.5 py-0.5 rounded">
+									{post.data.tags[0]}
+								</span>
+							)}
+							<span class="w-[3px] h-[3px] bg-text-muted rounded-full"></span>
+							<FormattedDate date={post.data.pubDate} />
+							<span class="w-[3px] h-[3px] bg-text-muted rounded-full"></span>
+							<span>{readingTime(post.body ?? '')}</span>
+						</div>
+						<h2 class="text-xl font-semibold tracking-tight leading-snug mb-2">
+							<a href={`/blog/${post.id}/`} class="text-text-primary hover:text-accent transition-colors no-underline">
+								{post.data.title}
+							</a>
+						</h2>
+						<p class="text-[0.9375rem] text-text-secondary leading-relaxed mb-4">
+							{post.data.description}
+						</p>
+						<div class="flex flex-wrap gap-2 mb-3">
+							{post.data.tags.map((tag) => (
+								<span class="font-mono text-[0.6875rem] text-tag-text bg-tag-bg border border-tag-border px-2 py-0.5 rounded">
+									{tag}
+								</span>
+							))}
+						</div>
+						<a href={`/blog/${post.id}/`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:gap-2.5 transition-all no-underline">
+							Read more
+							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+						</a>
+					</article>
+				))}
+			</div>
 		</main>
+
 		<Footer />
+
+		<script>
+			const panel = document.getElementById('filter-panel');
+			const overlay = document.getElementById('filter-overlay');
+			const toggleBtn = document.getElementById('filter-toggle');
+			const closeBtn = document.getElementById('filter-close');
+			const activeFilter = document.getElementById('active-filter');
+			const activeFilterTag = document.getElementById('active-filter-tag');
+			const clearFilter = document.getElementById('clear-filter');
+			const cards = document.querySelectorAll<HTMLElement>('.post-card');
+			const filterBtns = document.querySelectorAll<HTMLButtonElement>('.tag-filter-btn');
+
+			function openPanel() {
+				panel?.classList.remove('-translate-x-full');
+				panel?.classList.add('translate-x-0');
+				overlay?.classList.remove('hidden');
+				toggleBtn?.classList.add('hidden');
+			}
+
+			function closePanel() {
+				panel?.classList.add('-translate-x-full');
+				panel?.classList.remove('translate-x-0');
+				overlay?.classList.add('hidden');
+				toggleBtn?.classList.remove('hidden');
+			}
+
+			function filterByTag(tag: string) {
+				cards.forEach((card) => {
+					if (!tag) {
+						card.style.display = '';
+					} else {
+						const tags = card.dataset.tags?.split(',') || [];
+						card.style.display = tags.includes(tag) ? '' : 'none';
+					}
+				});
+
+				// Update active filter display
+				if (tag && activeFilter && activeFilterTag) {
+					activeFilter.classList.remove('hidden');
+					activeFilter.classList.add('flex');
+					activeFilterTag.textContent = tag;
+				} else if (activeFilter) {
+					activeFilter.classList.add('hidden');
+					activeFilter.classList.remove('flex');
+				}
+
+				// Highlight active button
+				filterBtns.forEach((btn) => {
+					const btnTag = btn.dataset.tag || '';
+					if (btnTag === tag) {
+						btn.classList.add('bg-accent-subtle', 'text-accent');
+					} else {
+						btn.classList.remove('bg-accent-subtle', 'text-accent');
+					}
+				});
+
+				// Update URL
+				const url = new URL(window.location.href);
+				if (tag) {
+					url.searchParams.set('tag', tag);
+				} else {
+					url.searchParams.delete('tag');
+				}
+				window.history.replaceState({}, '', url.toString());
+			}
+
+			toggleBtn?.addEventListener('click', openPanel);
+			closeBtn?.addEventListener('click', closePanel);
+			overlay?.addEventListener('click', closePanel);
+
+			filterBtns.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					filterByTag(btn.dataset.tag || '');
+					closePanel();
+				});
+			});
+
+			clearFilter?.addEventListener('click', () => filterByTag(''));
+
+			// Apply filter from URL on load
+			const params = new URLSearchParams(window.location.search);
+			const initialTag = params.get('tag');
+			if (initialTag) {
+				filterByTag(initialTag);
+			}
+		</script>
 	</body>
 </html>

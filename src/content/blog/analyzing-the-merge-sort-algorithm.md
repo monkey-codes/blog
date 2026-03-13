@@ -11,8 +11,6 @@ tags: ["Algorithms"]
 
 Taking a problem, breaking it down into smaller problems that you solve recursively and then combine the results of the smaller sub problems to get a solution to the original problem.
 
-MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", styles: {".MathJax": {"font-weight":"bold"}} } });
-
 ## Example
 
 ### pseudo code

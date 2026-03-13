@@ -9,8 +9,6 @@ tags: ["Algorithms","development"]
 
 Every developer will, or have at some point, encountered this dreadful experience... the intimidating tech interview. In this series of posts I will cover some of the typical topics that arise in tech interviews, starting with _searching_ and _sorting_ algorithms most commonly applied to _List_ based collections.
 
-MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", scale: 80, styles: {".MathJax": {"font-weight":"bold"}} } });
-
 > “Before anything else, preparation is they key to success.”— Alexander Graham Bell
 
 ## Arrays

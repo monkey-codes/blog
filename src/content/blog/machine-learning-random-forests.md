@@ -6,8 +6,6 @@ updatedDate: 2021-03-14
 heroImage: "/content/images/2019/01/random_forest_post.jpg"
 ---
 
-MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", scale: 80, styles: {".MathJax": {"font-weight":"normal"}} } });
-
 ## Overview
 
 Modern machine learning can be distilled down to a couple of techniques that can be applied to a wide variety situations. Recent studies have shown that the majority of datasets can be modeled with just 2 methods:

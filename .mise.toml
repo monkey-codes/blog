@@ -1,3 +1,4 @@
 [tools]
+"aqua:go-task/task" = "latest"
 node = "22"
 pnpm = "10"

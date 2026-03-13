@@ -13,8 +13,6 @@ In part 1 of this series I looked at [common search and sort algorithms used on 
 
 A _tree_ is essentially an extension of a [linked list](/tech-interview-cheatsheet-lists-search-sort/#linkedlists). It consists of a set of connected elements, called _nodes_. In contrast to _linked lists_ a _node_ can be connected to multiple other _nodes_ but there can be no cycles. A cycle is more than 1 way to get to a node. The first element is called the _root_ and elements that contain no _descendants_ are called _leaf nodes_. The connections between _nodes_ are called _edges_ and a group of _edges_ is called a _path_
 
-MathJax.Hub.Config({ jax: \["input/TeX", "output/HTML-CSS"\], tex2jax: { inlineMath: \[ \['$', '$'\] \], displayMath: \[ \['$$', '$$'\]\], processEscapes: true, skipTags: \['script', 'noscript', 'style', 'textarea', 'pre', 'code'\] }, messageStyle: "none", "HTML-CSS": { preferredFont: "TeX", scale: 80, styles: {".MathJax": {"font-weight":"bold"}} } });
-
 _Levels_ describe how many connections it takes to reach the _root_, which resides at level 1. The _height_ of a _node_ describes the number of _edges_ between it and the furthest _leaf node_. A _leaf node_ will always have a height of 0. On the flip side, the _depth_ of a _node_ is the number _edges_ to the _root node_.
 
 ![wide](https://res.cloudinary.com/monkey-codes/image/upload/v1494557528/algorithms/Screen_Shot_2017-05-12_at_12.49.59_pm_z5ww81.png)
