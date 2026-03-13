@@ -1,4 +1,6 @@
 ---
+import { Code } from 'astro:components';
+
 interface Props {
   id: string;
   user?: string;
@@ -34,7 +36,7 @@ try {
 }
 
 function langAlias(lang: string | null): string {
-  if (!lang) return '';
+  if (!lang) return 'plaintext';
   const lower = lang.toLowerCase();
   const map: Record<string, string> = {
     'c#': 'csharp',
@@ -55,7 +57,7 @@ function langAlias(lang: string | null): string {
     {files.map((file) => (
       <div class="gist-file">
         <div class="gist-filename">{file.filename}</div>
-        <pre><code class={langAlias(file.language) ? `language-${langAlias(file.language)}` : ''}>{file.content}</code></pre>
+        <Code code={file.content} lang={langAlias(file.language)} theme="github-dark" />
       </div>
     ))}
     <div class="gist-footer">
