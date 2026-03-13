@@ -3,7 +3,7 @@ title: "Visualizing a Spring Context Graph"
 description: "How to examine the runtime state of a Spring context with the help of an object graph."
 pubDate: 2016-03-29
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/03/spring_graph_post_header.jpg"
+#heroImage: "/content/images/2016/03/spring_graph_post_header.jpg"
 tags: ["Spring","development"]
 ---
 

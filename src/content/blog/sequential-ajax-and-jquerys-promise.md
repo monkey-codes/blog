@@ -3,7 +3,7 @@ title: "Sequential AJAX and jQuery's promise"
 description: ""
 pubDate: 2016-01-20
 updatedDate: 2018-05-15
-heroImage: "/content/images/2016/01/promise_post_header.jpg"
+#heroImage: "/content/images/2016/01/promise_post_header.jpg"
 tags: ["AJAX","jQuery","Javascript"]
 ---
 

@@ -3,7 +3,7 @@ title: "How to setup Kodi on a Raspberry Pi"
 description: "Building a pocket sized media center (HTPC) using Arch Linux, Kodi and a Raspberry Pi 3."
 pubDate: 2016-11-14
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/11/kodi_pi_post_header.jpg"
+#heroImage: "/content/images/2016/11/kodi_pi_post_header.jpg"
 tags: ["development"]
 ---
 

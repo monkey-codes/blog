@@ -3,7 +3,7 @@ title: "Basic \"bump\" API using Rails"
 description: "A protocol to link mobile devices through device bumping, a technique that requires accurate device geolocation."
 pubDate: 2016-01-02
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/01/bump_post_header.jpg"
+#heroImage: "/content/images/2016/01/bump_post_header.jpg"
 tags: ["development","rails","ruby","API"]
 ---
 

@@ -3,7 +3,7 @@ title: "Actuator and Prometheus"
 description: "How to monitor and measure a Spring Boot Application's performance."
 pubDate: 2016-02-27
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/02/actuator_post_header.jpg"
+#heroImage: "/content/images/2016/02/actuator_post_header.jpg"
 tags: ["development","API","Groovy","Gradle","Spring"]
 ---
 

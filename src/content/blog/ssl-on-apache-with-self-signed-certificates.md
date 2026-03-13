@@ -3,7 +3,7 @@ title: "SSL On Apache With Self Signed Certificates"
 description: "How to setup SSL for multiple Virtual Hosts in Apache using self signed certificates."
 pubDate: 2016-07-07
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/06/apache_ssl_post_header.jpg"
+#heroImage: "/content/images/2016/06/apache_ssl_post_header.jpg"
 tags: ["development","Docker"]
 ---
 

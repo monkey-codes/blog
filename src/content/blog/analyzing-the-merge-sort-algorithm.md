@@ -3,7 +3,7 @@ title: "Analyzing The Merge Sort Algorithm"
 description: "An example of how to analyze the running time of a divide and conquer algorithm like merge sort."
 pubDate: 2016-05-22
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/05/algorithms_post_header.jpg"
+#heroImage: "/content/images/2016/05/algorithms_post_header.jpg"
 tags: ["Algorithms"]
 ---
 

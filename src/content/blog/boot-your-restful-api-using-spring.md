@@ -3,7 +3,7 @@ title: "Boot Your RESTful API Using Spring"
 description: "How to build a HATEOAS RESTful API using Spring Boot and Mongo."
 pubDate: 2016-02-17
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/03/boot_api_post_header.jpg"
+#heroImage: "/content/images/2016/03/boot_api_post_header.jpg"
 tags: ["API","development","Groovy","Gradle","Spring"]
 ---
 

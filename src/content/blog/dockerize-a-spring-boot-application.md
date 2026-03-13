@@ -3,7 +3,7 @@ title: "Dockerize a Spring Boot Application"
 description: "A brief exploration of Docker and how it can be used to setup a complex application with several components."
 pubDate: 2016-03-13
 updatedDate: 2018-06-04
-heroImage: "/content/images/2016/03/docker_post_header.jpg"
+#heroImage: "/content/images/2016/03/docker_post_header.jpg"
 tags: ["Docker","development","Gradle","Spring"]
 ---
 
