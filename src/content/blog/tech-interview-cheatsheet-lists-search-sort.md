@@ -66,12 +66,12 @@ Given \[1,2,3,4,5,6,7,8\] and _x_ = 10:
 
 When faced with an unknown algorithm, one trick is to use a table that tracks the number of iterations for each increase in the input size of the array. Below is a table that applies this technique to the binary search algorithm. Upon closer inspection it roughly looks like the number of iterations increase when the input size doubles:
 
-$$\\begin{array}{|c|c|}  
-\\hline n & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\\\ \\hline  
-\\text{iterations} & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline  
+$$\\begin{array}{|c|c|}
+\\hline n & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\\\ \\hline
+\\text{iterations} & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline
 \\end{array}$$
 
-$$\\begin{align}  
+$$\\begin{align}
 n & \\approx 2^\\text{iterations - 1} \\\\ 
 \\text{iterations}& \\approx log\_2 (n) + 1\\\\ 
 complexity & \\approx O(log\_2(n)+1) \\\\ 
@@ -90,14 +90,14 @@ _Bubble sort_ is the simplest of sorting algorithms and probably the one most de
 
 The complexity of the algorithm would roughly be $\\text{no\_comparisons} \\times \\text{no\_iterations}$. The number of comparisons (worst case) is approximately 1 less than the input size. To calculate the number of iterations, the same trick used in _Binary Search_ can be applied, namely map the number of iterations against the input size and try to spot a pattern.
 
-$$  
-\\begin{array}{|c|c|}  
-\\hline & 2^0 & 2^1 & & 2^2 & & & & 2^3 & \\\\ \\hline  
-\\hline n & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\\ \\hline  
-iterations & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline  
+$$
+\\begin{array}{|c|c|}
+\\hline & 2^0 & 2^1 & & 2^2 & & & & 2^3 & \\\\ \\hline
+\\hline n & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\\ \\hline
+iterations & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline
 \\end{array}$$
 
-$$\\begin{align}  
+$$\\begin{align}
 n& \\approx 2^\\text{iterations} \\\\ 
 \\text{iterations}& \\approx log(n) \\\\ 
 \\text{comparisons}& \\approx n \\\\ 

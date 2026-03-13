@@ -43,18 +43,18 @@ The recursive nature of the algorithm can be represented as a binary tree, each 
 
 As the diagram depicts, given input array $n = 8$, the number of _levels_ are $\\log\_2 n + 1$. At each level $j=0,1,2,...,\\log\_2n$ there are $2^j$ sub-problems, each with input size $\\dfrac{n}{2^j}$. From the earlier calculation the merge takes $6m$ operations. To calculate for level $j$
 
-$$\\begin{align}  
-m& =\\dfrac{n}{2^j} \\\\ 
-op\_j& =2^j \\times 6m \\\\ 
-& = 2^j \\times 6\\left(\\dfrac{n}{2^j}\\right) \\\\ 
-& = 6n  
+$$\\begin{align}
+m& =\\dfrac{n}{2^j} \\\\
+op\_j& =2^j \\times 6m \\\\
+& = 2^j \\times 6\\left(\\dfrac{n}{2^j}\\right) \\\\
+& = 6n
 \\end{align}$$
 
 This means that the number of operations at any given level are independent of the level. The total can be calculated by multiplying the number of levels with the amount of work done at each level:
 
-$$\\begin{align}  
-total& =6n \\times (\\log\_2 n + 1) \\\\ 
-& = 6n \\log\_2 n + 6n  
+$$\\begin{align}
+total& =6n \\times (\\log\_2 n + 1) \\\\
+& = 6n \\log\_2 n + 6n
 \\end{align}$$
 
 ## Guiding Principles For Analyzing Algorithms
@@ -66,9 +66,9 @@ The running time bound holds for **every** input of length $n$, especially for l
 ### Principle #2 - Don't Sweat The Small Stuff
 
 Don't pay too much attention to constant factors and lower-order terms. Like the analysis of _merge_ part was simplified from  
-$$\\begin{align}  
-\\text{op\_merge}& = 4m + 2 \\\\ 
-& = 6m\\ (since\\ m\\ \\geqslant 1)  
+$$\\begin{align}
+\\text{op\_merge}& = 4m + 2 \\\\
+& = 6m\\ (since\\ m\\ \\geqslant 1)
 \\end{align}$$
 
 Using accurate constants depends on the architecture, compiler and the programming language. Algorithm analysis generally happens at a higher level. Secondly it **simplifies** the analysis while sacrificing very little in terms of predicting the running time of an algorithm.
@@ -145,44 +145,44 @@ The most common list of functions in asymptotic analysis, listed from slowest gr
 
 This can be used as a formula to calculate the running time of a recursive algorithm.
 
-$$  
-T(n) \\leqslant aT\\left(\\dfrac{n}{b}\\right) + O(n^d)  
+$$
+T(n) \\leqslant aT\\left(\\dfrac{n}{b}\\right) + O(n^d)
 $$
 
 Where $a$ is the number of recursive calls or sub-problems, $b$ is the factor by which the input size shrinks on each recursive call and $d$ is the exponent in running time of the work done outside of the recursive call.
 
-$$  
-\\begin{align}  
-T(n) & = O(n^d\\ log\\ n) & \\text{ if } a = b^d \\text{ (case 1)} \\\\ 
-T(n) & = O(n^d) & \\text{ if } a < b^d \\text{ (case 2)} \\\\ 
-T(n) & = O(n^{log\_b\\ a}) & \\text{ if } a > b^d \\text{ (case 3)}  
-\\end{align}  
+$$
+\\begin{align}
+T(n) & = O(n^d\\ log\\ n) & \\text{ if } a = b^d \\text{ (case 1)} \\\\
+T(n) & = O(n^d) & \\text{ if } a < b^d \\text{ (case 2)} \\\\
+T(n) & = O(n^{log\_b\\ a}) & \\text{ if } a > b^d \\text{ (case 3)}
+\\end{align}
 $$
 
 In _Case 1_ the work remains the same at each level, _Case 2_ the time is dominated by the work done in the root node and in _Case 3_ the time is dominated by the work done in the leaf nodes.
 
 The number of leaves of a recursion tree can be calculated as:
 
-$$  
-\\begin{align}  
-leaves & = a^{log\_b\\ n} \\\\ 
-& = n^{log\_b\\ a}  
-\\end{align}  
+$$
+\\begin{align}
+leaves & = a^{log\_b\\ n} \\\\
+& = n^{log\_b\\ a}
+\\end{align}
 $$
 
 ### Example - Apply Master Method to Merge Sort
 
 In merge sort the number of recursive calls ($a$) is 2 (left and right side). The input size ($b$) in each of the recursive calls is halved ($b=2$). The work done at each level ($d$) is linear (1).  
-$$  
-\\begin{align}  
-a & = 2 \\\\ 
-b & = 2 \\\\ 
-d & = 1 \\\\ 
-a & = b^d ;;;;;;\\text{ (case 1)} \\\\ 
-2 & = 2^1 \\\\ 
-T(n) & = O(n^d\\ log\\ n) \\\\ 
-& = O(n\\ log\\ n)  
-\\end{align}  
+$$
+\\begin{align}
+a & = 2 \\\\
+b & = 2 \\\\
+d & = 1 \\\\
+a & = b^d ;;;;;;\\text{ (case 1)} \\\\
+2 & = 2^1 \\\\
+T(n) & = O(n^d\\ log\\ n) \\\\
+& = O(n\\ log\\ n)
+\\end{align}
 $$
 
 Thus the _Master Method_ conveniently yields the same result as the original analysis.
