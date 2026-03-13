@@ -6,6 +6,7 @@ updatedDate: 2018-06-04
 heroImage: "/content/images/2017/05/tech_interview_cheatsheet.jpg"
 tags: ["Algorithms","development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 Every developer will, or have at some point, encountered this dreadful experience... the intimidating tech interview. In this series of posts I will cover some of the typical topics that arise in tech interviews, starting with _searching_ and _sorting_ algorithms most commonly applied to _List_ based collections.
 
@@ -66,19 +67,21 @@ Given \[1,2,3,4,5,6,7,8\] and _x_ = 10:
 
 When faced with an unknown algorithm, one trick is to use a table that tracks the number of iterations for each increase in the input size of the array. Below is a table that applies this technique to the binary search algorithm. Upon closer inspection it roughly looks like the number of iterations increase when the input size doubles:
 
-$$\\begin{array}{|c|c|}
+$$\\begin{'{'}array{'}'}{'{'}|c|c|{'}'}
 \\hline n & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\\\ \\hline
-\\text{iterations} & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline
-\\end{array}$$
+\\text{'{'}iterations{'}'} & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline
+\\end{'{'}array{'}'}$$
 
-$$\\begin{align}
-n & \\approx 2^\\text{iterations - 1} \\\\ 
-\\text{iterations}& \\approx log\_2 (n) + 1\\\\ 
+$$\\begin{'{'}align{'}'}
+n & \\approx 2^\\text{'{'}iterations - 1{'}'} \\\\ 
+\\text{'{'}iterations{'}'}& \\approx log\_2 (n) + 1\\\\ 
 complexity & \\approx O(log\_2(n)+1) \\\\ 
 & \\approx O(log(n))\\\\ 
-\\end{align}$$
+\\end{'{'}align{'}'}$$
 
 Simple python implementation (iterative):
+
+<Gist id="d43816c846785bb691f9062f963037fd" />
 
 ### Bubble sort
 
@@ -88,22 +91,22 @@ _Bubble sort_ is the simplest of sorting algorithms and probably the one most de
 
 [Merge sort](/analyzing-the-merge-sort-algorithm/) is an example of a _Divide and Conquer_ algorithm. Recursively split the input array until you have arrays with $\\le 2$ elements. Then merge 2 adjacent arrays by comparing the first elements, since each array is already sorted. Rinse and Repeat.
 
-The complexity of the algorithm would roughly be $\\text{no\_comparisons} \\times \\text{no\_iterations}$. The number of comparisons (worst case) is approximately 1 less than the input size. To calculate the number of iterations, the same trick used in _Binary Search_ can be applied, namely map the number of iterations against the input size and try to spot a pattern.
+The complexity of the algorithm would roughly be $\\text{'{'}no\_comparisons{'}'} \\times \\text{'{'}no\_iterations{'}'}$. The number of comparisons (worst case) is approximately 1 less than the input size. To calculate the number of iterations, the same trick used in _Binary Search_ can be applied, namely map the number of iterations against the input size and try to spot a pattern.
 
 $$
-\\begin{array}{|c|c|}
+\\begin{'{'}array{'}'}{'{'}|c|c|{'}'}
 \\hline & 2^0 & 2^1 & & 2^2 & & & & 2^3 & \\\\ \\hline
 \\hline n & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\\ \\hline
 iterations & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline
-\\end{array}$$
+\\end{'{'}array{'}'}$$
 
-$$\\begin{align}
-n& \\approx 2^\\text{iterations} \\\\ 
-\\text{iterations}& \\approx log(n) \\\\ 
-\\text{comparisons}& \\approx n \\\\ 
-complexity& \\approx O(\\text{comparisons} \\times \\text{iterations}) \\\\ 
+$$\\begin{'{'}align{'}'}
+n& \\approx 2^\\text{'{'}iterations{'}'} \\\\ 
+\\text{'{'}iterations{'}'}& \\approx log(n) \\\\ 
+\\text{'{'}comparisons{'}'}& \\approx n \\\\ 
+complexity& \\approx O(\\text{'{'}comparisons{'}'} \\times \\text{'{'}iterations{'}'}) \\\\ 
 & \\approx O(n \\ log(n)) \\\\ 
-\\end{align}$$
+\\end{'{'}align{'}'}$$
 
 ### Quick sort
 
@@ -112,6 +115,8 @@ Pick a _pivot_ element at random (convention picks the last number), then move a
 _Quick Sort_ is an in place sorting algorithm with a space complexity of $(O(1))$.
 
 Worst case time complexity is when the _pivot_ does not split the array roughly in half. If the _pivot_ belongs at the end, then you will end up comparing it to all the other numbers without swapping. This is compounded if the 2nd number has the same scenario. Thus worst case complexity for _Quick Sort_ is the same as _Bubble Sort_, $O(n^2)$. Average case is $O(n\\ log(n))$. _Quick Sort_ does offer some opportunity for optimisation, for example the splits can run in parallel.
+
+<Gist id="ff350d47537fcd05715e3421e2840918" />
 
 In part 2 of this series I will look at [hash functions & maps](/tech-interview-cheatsheet-maps-hashing/).
 

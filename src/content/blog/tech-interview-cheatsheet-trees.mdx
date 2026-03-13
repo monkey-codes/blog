@@ -6,6 +6,7 @@ updatedDate: 2018-06-04
 heroImage: "/content/images/2017/05/tech_interview_cheatsheet-2.jpg"
 tags: ["Algorithms","development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 In part 1 of this series I looked at [common search and sort algorithms used on lists](/tech-interview-cheatsheet-lists-search-sort/). Part 2 focused on [hash functions, sets and maps](/tech-interview-cheatsheet-maps-hashing/). In this post I will look at _trees_, _depth and breadth first search_, _binary search trees_ and _self balancing trees_.
 
@@ -28,6 +29,8 @@ _DFS_ prioritises searching down child nodes before exploring other nodes on the
 #### Pre-Order DFS
 
 This algorithm first checks the node before visiting its children. It starts by visiting the left child and keeps going left, checking off nodes as it goes, until a leaf node is reached. At this point you step back to the parent and traverse to the right child.
+
+<Gist id="2a2bcede820499e3e3e1eb9e4e4d291b" />
 
 #### In-Order DFS
 
@@ -55,9 +58,11 @@ When deleting a node, the children of that node should be considered, 3 potentia
 
 ## Binary Search Trees (BST)
 
-Binary search trees define some order to the nodes. Every child on the left of a node is smaller than the current node and every child on the right is bigger. ($ \\text{left\_child} \\lt \\text{current\_node} \\lt \\text{right\_child}$). This characteristic of BST's enables quick search by comparing the target number to a node and moving left if its smaller or right if its bigger. Search complexity is equal to the height of the tree, $O(log(n))$. The same applies for insertion.
+Binary search trees define some order to the nodes. Every child on the left of a node is smaller than the current node and every child on the right is bigger. ($ \\text{'{'}left\_child{'}'} \\lt \\text{'{'}current\_node{'}'} \\lt \\text{'{'}right\_child{'}'}$). This characteristic of BST's enables quick search by comparing the target number to a node and moving left if its smaller or right if its bigger. Search complexity is equal to the height of the tree, $O(log(n))$. The same applies for insertion.
 
 A complication that can arise is when the tree is _unbalanced_. An _unbalanced BST_ has a distribution of nodes that are skewed to one direction, worst case being simply a linked list (all the nodes are on one side). In that scenario search will happen in linear time, $O(n)$.
+
+<Gist id="72fba09348aaef91c60d35e86bd49c61" />
 
 ## Self-Balancing Trees
 

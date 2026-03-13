@@ -5,6 +5,7 @@ pubDate: 2020-04-24
 updatedDate: 2021-03-14
 heroImage: "/content/images/2019/01/random_forest_post.jpg"
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Overview
 
@@ -23,13 +24,13 @@ Before diving into building a machine learning model, you need a way to measure 
 ### Root Mean Square Error (RMSE)
 
 $$  
-RMSE = \\sqrt{ {\\frac{1}{N}\\sum\_{i=1}^N(actual\_i - prediction\_i)^2}}  
+RMSE = \\sqrt{'{'} {'{'}\\frac{'{'}1{'}'}{'{'}N{'}'}\\sum\_{'{'}i=1{'}'}^N(actual\_i - prediction\_i)^2{'}'}{'}'}  
 $$
 
 ### Root Mean Square Log Error (RMSLE)
 
 $$  
-RMSLE = \\sqrt{ {\\frac{1}{N}\\sum\_{i=1}^N(\\log(actual\_i) - \\log(prediction\_i))^2}}  
+RMSLE = \\sqrt{'{'} {'{'}\\frac{'{'}1{'}'}{'{'}N{'}'}\\sum\_{'{'}i=1{'}'}^N(\\log(actual\_i) - \\log(prediction\_i))^2{'}'}{'}'}  
 $$
 
 ### Coefficient of Determination ($r^2$)
@@ -47,6 +48,8 @@ A random forest consists of a collection of decision trees (also called estimato
 ### How a split point is chosen.
 
 [There are several ways to determine the best split point](https://youtu.be/blyXCk4sgEg?t=2647). One way is trying every possible split point for every feature until you find the point with the lowest weighted avg mean squared error (MSE \* number of samples in split). In other words, which split point has the best _mean squared error_. [Another way](https://youtu.be/O5F9vR2CNYI?t=2129) to calculate the score is to find a split where both groups have the lowest weighted average standard deviation.
+
+<Gist id="cc4dfeab7650d6cfd23417f49b488577" />
 
 ![Sample decision tree](https://res.cloudinary.com/monkey-codes/image/upload/v1529037329/Screen_Shot_2018-06-15_at_2.34.17_pm_vpkmoa.png)
 
@@ -96,12 +99,12 @@ By default the `RandomForestRegressor` will use a different subset of the traini
 
 The aim of bagging is that each **estimator is as accurate as possible**, but between the estimators the **correlation is as low as possible** so that when you average out the values you end up with something that generalizes.
 
-Not directly supported by scikit-learn but fastai provides `set_rf_samples` to change how many records are used for subsampling. A tree built with 20k records will have $log\_2{(20k)}$ levels and 20K leaf nodes. Less nodes means the tree is smaller and faster but also less rich in what it can predict. [The effect of this](https://youtu.be/0v93qHDqq_g?t=384) is that the tree **will overfit less** but also be **less accurate in its prediction**.
+Not directly supported by scikit-learn but fastai provides `set_rf_samples` to change how many records are used for subsampling. A tree built with 20k records will have $log\_2{'{'}(20k){'}'}$ levels and 20K leaf nodes. Less nodes means the tree is smaller and faster but also less rich in what it can predict. [The effect of this](https://youtu.be/0v93qHDqq_g?t=384) is that the tree **will overfit less** but also be **less accurate in its prediction**.
 
 ### Minimum Leaf Samples
 
 Changes the amount of records in the leaf node. Every time you double the amount of records in a leaf node you remove 1 level from the tree  
-($ log\_2{(n)} - 1$). The effect of this is that the estimator will be **less accurate** but also **less correlated**.
+($ log\_2{'{'}(n){'}'} - 1$). The effect of this is that the estimator will be **less accurate** but also **less correlated**.
 
 ### Maximum Features
 
@@ -129,6 +132,8 @@ Once this has been done for every feature, the importance can be ranked based on
 Another technique that can be applied after removing inconsequential features, is to [remove features with similar meaning](https://youtu.be/0v93qHDqq_g?t=3324). This can be achieved by plotting the rank correlation of the features and removing one from every group where they are considered similar. Keep an eye on the evaluation function (RMSE, $r^2$, OOB...) to make sure removing the feature had the desired effect.
 
 An example of a rank correlation plot from [kaggle's house price prediction problem](https://www.kaggle.com/c/house-prices-advanced-regression-techniques#evaluation):
+
+<Gist id="1aeb07a7bd498ceb12d6da58fdf3b3d0" />
 
 ![Rank correlation plot](https://res.cloudinary.com/monkey-codes/image/upload/v1529295234/rank_correlation_plot.png)
 

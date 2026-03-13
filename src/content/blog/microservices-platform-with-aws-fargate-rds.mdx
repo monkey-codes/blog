@@ -5,6 +5,7 @@ pubDate: 2020-06-28
 heroImage: "/content/images/2020/06/fargate_rds_post_header.jpg"
 tags: ["DevOps"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Overview
 
@@ -21,15 +22,21 @@ Two important aspects of the Cloudformation stack creates the Fargate infrastruc
 
 The Container Security Group controls access to containers running on Fargate. Typically this includes network access from the Load Balancer and potentially allowing containers in the cluster to communicate, although I have found that inter-container communication usually happens via the Load Balancer. Secondly, the RDS cluster will permit network access from any container in this Security Group. Limiting network access to the database by only allowing certain Security Groups is better than say allowing an entire subnet or CIDR ranges.
 
+<Gist id="2ad23361ee84d90ea6ee58b6c3429885" />
+
 ### Task Execution Role
 
 Not to be confused with the Task Role, the Task Execution Role is what permits Fargate to perform actions related to running the container. These typically include permission to pull images from ECR and to forward logs to Cloudwatch. This role **does not define what the container running on Fargate can access**, that is the job of the Task Role.
+
+<Gist id="1b460985fbc0ff1ea426d6bbd81f1bd9" />
 
 The 3rd important aspect of the Fargate stack is internal, the ECS Role:
 
 ### ECS Role
 
 An IAM role which authorizes ECS to manage resources in the account is also required. Generally, this includes permission to modify the Elastic Load Balancer in terms of updating Target Groups. During deployment, Fargate will start the new container and then adjust the IP in the Target Group to that of the newly created container.
+
+<Gist id="2951050406ccf875e49c0ddd372465f0" />
 
 ## Aurora Postgres RDS Cluster
 
@@ -42,13 +49,18 @@ One of the challenges when creating an RDS Cloudformation stack is how to create
 **A note about custom Cloudformation resources:**  
 Any language supported by AWS Lambda can be used to create a custom resource. I have found that Python is a good fit. Javascript tends to be more challenging to get right with its async nature. One giant drawback of custom resources is that the Lambda has to perform a callback to Cloudformation with the result, failure to do so will cause the initiating stack to hang until a timeout occurs.
 
-_Custom Cludformation Resource to generate credentials_
+<details>
+<summary>Custom Cludformation Resource to generate credentials</summary>
+<Gist id="e988f9c2721a3b05812e972ce04f3db7" />
+</details>
 
 ### Database Access Security Group
 
 A Security Group that defines network access permissions to the RDS Cluster. As mentioned earlier, this Security Group will permit the Fargate Container Security Group to access the RDS cluster, along with a Lambda backed custom resource that can create a database on the Cluster, which is discussed later in this post.
 
 A second `SecurityGroupIngress` resource allows access from the Database Access Security Group to itself, permitting replication between the RDS cluster nodes.
+
+<Gist id="fae042b64209a7571657e0d41e35d108" />
 
 ## Fargate Service
 
@@ -60,7 +72,10 @@ Every Microservice deployed on Fargate will have a Cloudformation stack. It defi
 
 The Fargate Service resource also gets defined in this stack. Including the Service in the Fargate Container Security Group permits network access to the Database.
 
-_Fargate Task Definition & Service_
+<details>
+<summary>Fargate Task Definition & Service</summary>
+<Gist id="76ab7b1c5e27a7c213cfaf270aff5f6d" />
+</details>
 
 This stack can define the Task Role, that grants permission to perform whatever actions the container requires, but it can reference the Task Execution Role created in the Fargate Cluster stack.
 
@@ -68,7 +83,10 @@ This stack can define the Task Role, that grants permission to perform whatever 
 
 The Cloudformation stack contains another Lambda custom resource that creates a database and the credentials to access it as part of service deployment. The lambda generates a password and stores it as a secure string in the Parameter Store using a KMS key that gets created as part of this stack (Every service gets its own KMS key). After generating the credentials, it connects to the RDS Cluster and creates a database and role that has all privileges on that database using the generated credentials. Note that the lambda will only perform this action if the database/credentials do not already exist.
 
-_Create Database Custom Resource_
+<details>
+<summary>Create Database Custom Resource</summary>
+<Gist id="7791936dbdfe3c25e256697740a10af8" />
+</details>
 
 The application has two options on how to retrieve the credentials, a startup script in the Docker container can use AWS CLI and pass it as arguments to the application or the application can resolve it at [runtime, e.g. spring-cloud](https://cloud.spring.io/spring-cloud-static/spring-cloud-aws/2.0.0.RELEASE/multi/multi__cloud_environment.html#_integrating_your_spring_cloud_application_with_the_aws_parameter_store).
 
@@ -80,9 +98,14 @@ A Target Group and Load Balancer Listener Rule are required to perform load bala
 
 The listener rule tells the load balancer what kind of HTTP requests to route to the target group. Typically the host header is used, that means every Service will have a unique domain name (_e.g. order-service.company.com_). There is one challenge in automating the creation of listener rules, the rule priority. The priority needs to be unique. Yet another Lambda backed custom resource can solve the problem by looking up the max rule priority number and increment it.
 
-_alb\_rule\_priority.py_
+<details>
+<summary>alb_rule_priority.py</summary>
+<Gist id="c0a85987c4032fb74c19340d79adf0fb" />
+</details>
 
 The last step is to create a Route53 DNS record for the service that points to the load balancer configured above.
+
+<Gist id="1a57c482cb847502771e369aa4834a2f" />
 
 ### Logging
 

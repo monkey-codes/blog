@@ -6,6 +6,7 @@ updatedDate: 2018-06-04
 heroImage: "/content/images/2016/12/boot_auth_post_header.jpg"
 tags: ["Spring","development","API","Groovy","Gradle"]
 ---
+import Gist from '../../components/Gist.astro';
 
 Unsure how to share authentication state between stateless microservices? This post will try to answer these questions using Spring Boot, Spring Security (OAuth2) and JSON Web Tokens (JWT).
 
@@ -40,6 +41,8 @@ The payload is a combination of:
 
 Below is a rough example of how JWT is composed:
 
+<Gist id="a716920201c8569de5539f65dc1d54a6" />
+
 ## Sample System Architecture
 
 ![boot auth architecture](https://res.cloudinary.com/monkey-codes/image/upload/v1480053775/boot-auth/boot-auth-architecture_fct4nj.svg)
@@ -61,7 +64,11 @@ The Spring context configuration for the _Auth Server_ consists of two parts, th
 
 `WebSecurityConfig` configures a basic form based login page. Furthermore it secures all OAuth endpoints exposed by the _Auth Server_. For simplicity's sake an in memory store of users is also included.
 
+<Gist id="534167e67d17e985f15b8d4f8deea7da" />
+
 `OAuth2Configuration` configures the required OAuth endpoints for the [Authorization Code Grant](http://tools.ietf.org/html/rfc6749#section-4.1) flow. Additionally it takes care of setting up the JWT token store and the key pair used to sign the tokens.
+
+<Gist id="2f0ba4145ff0b436bf25e30b239932ca" />
 
 ### Web App
 
@@ -81,9 +88,13 @@ To extract the public key from the keystore created for the _Auth Server_ (keyst
 ```
 $ keytool -list -rfc --keystore boot-auth-server/src/main/resources/jwt.jks | openssl x509 -inform pem -pubkey
 
+<Gist id="f4a40ed09bf1258a5725c3c214e85fef" />
+
 ```
 
 and the Spring configuration:
+
+<Gist id="af58d00240d66a1c5bfc3d90fdabb245" />
 
 ### Microservice
 
@@ -91,7 +102,11 @@ The _Microservice_ is a stateless application that exposes a single API endpoint
 
 The _Microservice_ also demonstrates authorization, by only allowing users with the `ROLE_READER` authority to access the resource.
 
+<Gist id="417285a1dd86fc08747a5f0d8af9c7b0" />
+
 Spring configuration:
+
+<Gist id="d191fe4cbae29466c3f1a213ab3edfae" />
 
 ## Running the Sample Application
 

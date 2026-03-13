@@ -6,6 +6,7 @@ updatedDate: 2018-06-04
 heroImage: "/content/images/2016/11/kodi_addon_post_header.jpg"
 tags: ["development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Add-on Repository Sturcture
 
@@ -49,6 +50,8 @@ $  vagrant up
 
 Ideally you will want to make changes to the add-on and just re-run the script in Kodi, instead of re-installing the add-on repeatedly. To do this, first produce a distribution of the add-on and push it to Github. Then [install the repository in Kodi from the zip file in the dist folder](http://kodi.wiki/view/HOW-TO:Install_add-ons_from_zip_files). The repository add-on itself will just contain an [addon.xml](https://github.com/monkey-codes/kodi-monkey-repo/blob/master/repo.monkey/addon.xml) file with URL's pointing to the `dist` folder on Github.
 
+<Gist id="93ee0f95125f846a2f12c90d07941c4a" />
+
 Once the repository and the add-on is installed, you can symlink the installed source back to the git folder mounted under `/vagrant` on the VM.
 
 ```
@@ -77,6 +80,8 @@ This file describes the add-on to Kodi, including how to execute it.
 *   `<requires>` defines the add-on dependencies.
 *   `xbmc.python.script` extension point tells Kodi that this is a script add-on and which python file to execute when the add-on is invoked.
 
+<Gist id="2d2246d4653fdd452f1a320105b5f6ac" />
+
 ### Displaying a List of Options
 
 The easiest way to display a list of options or a menu is to use the [select dialog](http://mirrors.xbmc.org/docs/python-docs/stable/xbmcgui.html#Dialog-select). It takes a list of options and blocks the script until an option is selected, returning the index of the selected option.
@@ -84,6 +89,8 @@ The easiest way to display a list of options or a menu is to use the [select dia
 ![screen_shot_1](https://res.cloudinary.com/monkey-codes/image/upload/v1479104322/kodi_vpn_screenshot_2_npq4yp.jpg)
 
 Since selecting options from a list is a common operation, I found it useful to define a generic `select` function that accepts a specific data structure for options. An option consists of a `label`, a function (`func`) to be executed when the option is selected, and a `complete` function to control flow of the script after an option has been selected.
+
+<Gist id="b0f510e015845c1c3c61ca55bebd464d" />
 
 The example above illustrates the code for the main menu in the add-on. Hopefully it clarifies the use of the `complete` function, in this case the script will render the main menu again once one of the selected options complete.
 
@@ -93,11 +100,15 @@ It is worth noting that selecting options can be nested. The `cmd_select_vpn` wi
 
 Some options may take a while to execute, a good user experience will let the user know that something is happening. Kodi provides a built-in busy dialog. To display it whenever an option is selected, the `func` of that option is curried with the `cmd_busy` function.
 
+<Gist id="71c652aae4385df89f578adebc64cfc8" />
+
 ### Custom Windows using XML
 
 When none of the [basic GUI controls](http://mirrors.xbmc.org/docs/python-docs/stable/xbmcgui.html) are sufficient, you can compose a new [window using XML](http://kodi.wiki/view/Window_Structure). These files live in `resources/skins/default/720p`. A good place to start is to copy one of the bundled files in the default skin under `/usr/share/kodi/addons/skin.confluence/720p/`.
 
 After [plenty of googling](http://forum.kodi.tv/showthread.php?tid=232752&pid=2059204#pid2059204), I found a way to pass variables to the custom window. Basically lookup one of the [predefined windows](http://kodi.wiki/view/Window_IDs) and set a property on it. The variable can then be read in the XML using `$INFO[Window(10001).Property(PropertyName)]`.
+
+<Gist id="39b9e73268bcb925e66808c207600cbe" />
 
 ## Troubleshooting Installation Issues
 

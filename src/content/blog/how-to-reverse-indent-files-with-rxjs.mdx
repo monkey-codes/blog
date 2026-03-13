@@ -5,6 +5,7 @@ pubDate: 2018-06-05
 heroImage: "/content/images/2018/06/Assembly-Line.jpg"
 tags: ["Javascript","development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Reactive Terminology & RxJS
 
@@ -22,6 +23,8 @@ Can be thought of as the primitive type of _Reactive_ programming. An _Observabl
 
 Apart from producing values, _Observables_ can produce two more signals: _error_ to indicate that the _Observable_ failed to produce values and _complete_ to signal that no more values will be produced.
 
+<Gist id="73471c91ff626f3fc2ac81450bc68f78" />
+
 RxJS includes many factory methods to create _Observables_ [from common sources](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html).
 
 ### Operators
@@ -33,6 +36,8 @@ RxJS includes plenty of [built in operators](https://github.com/ReactiveX/rxjs/b
 ### Subscribers
 
 _Subscribers_ sit at the end of the pipeline, after all the configured _Operators_ have mutated the values produced by the _Observable_. As mentioned earlier, when a new _Subscriber_ is attached to a _Cold Observable_, the generator function of that _Observable_ will be re-run.
+
+<Gist id="9c9100dbd7250de27d887b39c172b683" />
 
 ## Example: Reverse Indent Files
 
@@ -71,25 +76,37 @@ The script will overwrite the file with:
 
 Start by recursively reading all the files in a given directory. I made use of [recursive-readdir](https://github.com/jergason/recursive-readdir) to get the job done. The first step also makes use of the `Observable.bindNodeCallback` factory method provided by RxJS to create the initial Observable.
 
+<Gist id="8553c5325c1ecd49bca73fb62fd020ea" />
+
 ### Step 2: Map contents to an array of lines
 
 The next step is to map the stream of files to a stream of objects with two properties, the file name and its contents as an array of lines. Later the file name will be used to write the result of the reverse indentation back to the file system.
+
+<Gist id="4decc931047dedfd5c2b2e0fa49c9b95" />
 
 ### Step 3: Find the longest line
 
 The key step is to find the longest line in the file. This will be used to calculate how much whitespace to prefix every line with.
 
+<Gist id="74c25afcae131ab2e250fb2c994c386e" />
+
 ### Step 4: Swap whitespace around
 
 Once the longest line in the file is found, every line can be reverse indented by moving the whitespace at the beginning of the line to the end of the line and then padding the beginning of the line with whitespace until it is the same length as the longest line.
+
+<Gist id="42d93656fc298d57e10a67b7c5480074" />
 
 ### Step 5: Optionally add some logging to the pipeline
 
 Peeking into the stream without causing any side effects can be achieved through the `do` operator. In the gist below the original content of the file is logged in red, followed by the reverse indented lines logged in green. The output is only produced if the `verbose` flag is passed in from the command line.
 
+<Gist id="fce63d0b00ac5cd9805b8fdf03bff198" />
+
 ### Step 6: Subscribe to the result and write the file.
 
 Finally a subscriber is registered at the end of the stream to receive the results, one file at a time. Depending on whether the `dryRun` flag was passed in from the CLI, the subscriber will either log the results or replace the contents of the original file with its reverse indented counterpart.
+
+<Gist id="30c248e4265484a745b917af8f59991c" />
 
 ## References
 

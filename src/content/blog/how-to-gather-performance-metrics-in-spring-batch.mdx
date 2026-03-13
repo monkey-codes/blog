@@ -5,6 +5,7 @@ pubDate: 2018-07-09
 heroImage: "/content/images/2018/07/spring_batch_metrics.jpg"
 tags: ["Spring","development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 This post will look at 2 ways to extract performance metrics out of a [Spring Batch Job](https://projects.spring.io/spring-batch/) using [Dropwizard Metrics](https://metrics.dropwizard.io/4.0.0/). The solution discussed here will produce _Reader_, _Processor_ and _Writer_ throughput and mean times in addition to counters for skipped items by logging the metrics in a pre-configured interval to a log file. Armed with this information you will be able to answer questions like: _Is the job running?, How long will it take?, Which part is taking up the most time?_ and many more without having to wait until the job completes.
 
@@ -20,9 +21,14 @@ In both cases the metrics will be logged every 30s via the [Slf4jReporter provid
 
 The straight forward approach is to wrap the existing _Reader, Processor_ and _Writer_ with their corresponding decorators _MetricReader_, _MetricProcessor_ and _MetricWriter_ implementations. A _DecoratorFactory_ simplifies the configuration.
 
+<Gist id="4099ea46447821840921e6b16bf46329" />
+<Gist id="8bf33c4d905ae4da45a6a6212b8da550" />
+
 ![decorator class diagram](https://res.cloudinary.com/monkey-codes/image/upload/v1527135098/9bd14cf1_bc1qr1.png)
 
 All metrics are namespaced based on the job and step it belongs to, for example, given _sampleJob_ with a _sampleStep_, will produces log entries similar to:
+
+<Gist id="ffbfdff052084ff00a63917fcd565995" />
 
 The sample implementations of the _MetricReader_, _MetricProcessor_ and _MetricWriter_ are not suitable for a multi threaded batch job, however moving the _StatsNamespace_ field in each of them to a _ThreadLocal_ variable should be enough to get it working in a multi threaded job. (This has not been tested!)
 
@@ -37,6 +43,8 @@ The event driven approach relies on the life cycle events built into Spring Batc
 
 State diagram describing spring batch job state transitions:
 
+<Gist id="a43b02e948f685c0a8dc2364e06b6a3e" />
+
 ![State Diagram](https://res.cloudinary.com/monkey-codes/image/upload/v1527153288/Batch_State_Machine_xhxmcs.png)
 
 #### Parallel Processing
@@ -44,6 +52,8 @@ State diagram describing spring batch job state transitions:
 With a few caveats, collecting stats in a [multi threaded step](https://docs.spring.io/spring-batch/trunk/reference/html/scalability.html#multithreadedStep) is possible but does add considerable complexity. The first obvious limitation, imposed by the framework itself, is that the _Reader_, _Processor_ and _Writer_ all need to be thread-safe. Parallel processing is implemented by running each _Chunk_ in a separate thread, this means that a copy of the state machine described above is required for each thread. Failing to do this will cause the single state machine to receive events from different threads in a nonsensical order.
 
 The _ParallelProcessingStatsListener_ solves the problem by storing an instance of the state machine in a _ThreadLocal_ variable every time a _beforeChunk_ event is received. One of the reasons the event driven approach is limited in what events can be produced during chunk reprocessing is that the reprocessing does not necessarily happen in the same thread as what the original chunk processing failed in.
+
+<Gist id="ab399711c0634e7f65b7a636c314d5cc" />
 
 ## Reporting
 

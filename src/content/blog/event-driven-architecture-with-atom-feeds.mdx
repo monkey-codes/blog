@@ -5,6 +5,7 @@ pubDate: 2021-04-13
 heroImage: "/content/images/2021/04/event-driven-architecture-post-header-2.jpeg"
 tags: ["development","Spring"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Overview
 
@@ -25,11 +26,15 @@ Services employ CQRS and commands are the primary way of interacting with the do
 
 State changes inside of the aggregate happen by applying new events as part of handling a command. In the example below the state of the aggregate is updated when handling an event. The _id_ is set when handling the _WaiterHiredEvent_ and orders taken by the waiter are updated when handling the _OrderTakenEvent_. When a command targets an existing aggregate, Axon will hydrate the aggregate by replaying past events in order until the current state is reached.
 
+<Gist id="35f44de8a77a35d9dffe11477434d880" />
+
 New events are usually applied in the command handler method, but in complex aggregates, new events can also be applied in reaction to another event. In this case, Axon is smart enough to ignore those events while hydrating the aggregate. This prevents the events from repeatedly being applied when the aggregate is being hydrated.
 
 ### Aggregate Testing
 
 Unit testing an aggregate requires no knowledge about the structure of the aggregate itself. Tests typically define the events that have happened to obtain the desired state, then issue a command and assert that the expected events were raised. This pattern means that tests are rarely affected if the structure of the underlying aggregate changes.
+
+<Gist id="9543a890fa308bde95d9fea1b712a509" />
 
 ### Sagas
 
@@ -43,6 +48,8 @@ To simplify the diagram commands and events are passed directly from source to t
 
 Similar to aggregate testing, a saga test is not concerned with the structure of the saga itself. The setup defines events published by different aggregates linked to the saga and then asserts on the state or commands dispatched by the saga.
 
+<Gist id="d95ff025f16a0cddd211f1dc154b8fa2" />
+
 ### Projections and the Query Model
 
 To build a query model an event handler is used to project domain events into the desired shape of the model. These event handlers come in 2 forms, strongly consistent or eventually consistent. In Axon terms, strongly consistent handlers are called _subscription processors_ and eventually, consistent handlers are called _tracking processors_.
@@ -55,7 +62,11 @@ In the cafe example, 2 query model projections exist. The first is to add entrie
 
 As mentioned earlier each service applies CQRS. A Mutating HTTP API request is converted into a _Command_ and sent to the _CommandGateway_. Similarly, a query HTTP API Request is converted into a _Query_ and sent to the _QueryGateway_. In both cases, Axon takes care of resolving the correct _Aggregate_ or _QueryHandler_ to handle the request.
 
+<Gist id="c2ed8db300af484d42c4c17933f9c691" />
+
 A typical problem with eventually consistent query models is how to update the UI when the query model changes. Making a query API request immediately after a successful command API request does not mean that the query model has been updated yet. Polling the query endpoint may work but is not a very elegant solution. A _SubscriptionQuery_ is an Axon feature that allows interested parties to be notified of changes to the model backing the query. Combining this feature with [server-sent events](https://en.wikipedia.org/wiki/Server-sent_events) enables the server to push changes in the query model to the browser.
+
+<Gist id="2c18ea9f3bb87455267f21f974ad9dfe" />
 
 Note that the above example will not work if you scale out the service, in that case, a [distributed querybus is needed.](https://stackoverflow.com/questions/58010157/subscription-queries-in-a-multi-node-environment)
 

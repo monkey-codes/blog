@@ -5,6 +5,7 @@ pubDate: 2017-09-17
 heroImage: "/content/images/2017/09/webflux.jpg"
 tags: ["Spring","development","Javascript"]
 ---
+import Gist from '../../components/Gist.astro';
 
 [WebFlux](http://docs.spring.io/spring-framework/docs/5.0.0.RC2/spring-framework-reference/web.html#web-reactive) is one of the standout features of Spring 5.0, which is a functional web framework alternative to Spring-MVC, built on top of Reactive principles. This post will look at how to build a basic chat application using WebFlux on the server to handle incoming WebSockets and React on the front end.
 
@@ -50,21 +51,31 @@ Since not all clients will connect at the same time, the publisher is configured
 
 To enable WebSocket connections through _WebFlux_, a `SimpleUrlHandlerMapping` can be used. It maps a _WebSocket_ URL to an implementation of a `WebSocketHandler`. One thing to note is the explicit order of the `HandlerMapping`, omitting the order causes the mapping to clash with the `RouterFunction` configuration that deals with HTTP requests.
 
+<Gist id="f462b95415ccb0161d31d5ca9e18b31a" />
+
 ## Connecting WebSocket Sessions
 
 The crux of the application is to connect the `WebSocketSessions` to one another. This is achieved by connecting the incoming message stream of every session to a global publisher. On the flip side, every session subscribes to messages produced by the global publisher.
+
+<Gist id="cb45f3645f6b612a1107032cf5090d9d" />
 
 ## Publish Session Disconnects
 
 A key feature of any chat application is notifying all clients when one client disconnects. This can be achieved by publishing a _Disconnect Message_ on the GMS when the subscriber to the `WebSocketSession` receives an `onComplete` signal.
 
+<Gist id="caeb3a5d599db210ddf7a3144fb0c7e5" />
+
 ## Collecting Stats
 
 Collecting basic stats like message count for each user and when the last message was sent can be achieved by registering another subscriber to the GMS. The subscriber can collect the information by filtering the different types of messages flowing through the GMS. In the sample app, the `UserStats` class collects stats and emits it to all the users via a new message on the GMS whenever a new client connects to the chat application.
 
+<Gist id="c0f1762030462dcba26acaf65589ab69" />
+
 ## Front End
 
 The front end is a simple React with Redux application. Redux middleware manages the lifecycle of the WebSocket connection. Whenever an action of type `WEBSOCKET_CONNECT` is dispatched, the middleware connects to the WebSocket URL in the payload. Similarly, the `WEBSOCKET_SEND` action will send the payload as a JSON string over the WebSocket. The [source](https://github.com/monkey-codes/java-reactive-chat/tree/master/src/main/ui/app) for the React application is included with the rest of the sample code on [GitHub](https://github.com/monkey-codes/java-reactive-chat).
+
+<Gist id="b42c0919c5228b1619c816a0bb169966" />
 
 ## Conclusion
 

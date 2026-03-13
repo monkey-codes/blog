@@ -5,6 +5,7 @@ pubDate: 2020-04-24
 heroImage: "/content/images/2020/04/jenkins_post_header-2.jpg"
 tags: ["DevOps","development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Jenkins for CI/CD
 
@@ -29,7 +30,15 @@ Step one is to create an AMI that will form the base of both the Jenkins master 
 
 This example will make use of _Packer_ and _Ansible_ to build the AMI. The _Packer_ config for the AMI uses Amazon Linux as a base image and _Ansible_ to provision the required packages:
 
-ami.json playbook.yml
+<details>
+<summary>ami.json</summary>
+<Gist id="6e5c84ff7817a2af8b8ed1fe6b6fb137" />
+</details>
+
+<details>
+<summary>playbook.yml</summary>
+<Gist id="ac24916b2a0b0733fb0028691fadba14" />
+</details>
 
 You will have to bootstrap this from your local machine the first time but after Jenkins is up and running this can be placed in a pipeline that will automatically build future changes to the AMI. Volume in a directory with the above files into a packer container to build the AMI.
 
@@ -53,23 +62,35 @@ Customisations to the official image are limited to the following:
 *   Installing the Docker client to allow Jenkins to launch docker containers. Note that when we start Jenkins the host EC2 instance docker socket will be volumed into the container. This allows Jenkins to launch containers on the host from inside the container.
 *   Optionally include a custom.groovy and plugins.txt to configure Jenkins automatically
 
-Dockerfile
+<details>
+<summary>Dockerfile</summary>
+<Gist id="f727cbcbb7f605319c425898f9bbf7d2" />
+</details>
 
 For backups, we attach separate EBS storage to the EC2 instance and volume in the EBS mount point to the container under the JENKINS\_HOME directory. Making snapshots of the EBS volume will effectively backup build history and plugin installations.
 
 Initial bootstrapping of the Jenkins infrastructure will have to happen from your local PC but after that updates to the infrastructure can happen via a Jenkins pipeline, Jenkins updates its own infrastructure. The way this works is that you commit changes to the Jenkins infrastructure Cloudformation, which will be picked up and built by Jenkins. The cfn-init script that runs on the EC2 host will detect and perform the update and then restart the Jenkins docker container.
 
-Jenkins EC2 Cloudformation Resource
+<details>
+<summary>Jenkins EC2 Cloudformation Resource</summary>
+<Gist id="e5080158b646aa3b80e58d0b51604ff8" />
+</details>
 
 A security group limits SSH access to Jenkins through a fixed CIDR block (Most likely from the IP of a Bastion host deployed in the public subnet) but allows HTTPS access from anywhere (0.0.0.0/0). Since Jenkins will be deployed in a private subnet this really limits access to anything else deployed in the private subnet. Traffic will route via an application load balancer to Jenkins.
 
-Jenkins Security Group
+<details>
+<summary>Jenkins Security Group</summary>
+<Gist id="2be6fae0e9ce871748c3da4ff68e8e0c" />
+</details>
 
 Since Jenkins will be the central piece of infrastructure that deploys applications onto AWS infrastructure via Cloudformation, it needs certain AWS permissions to perform that action. Jenkins will get its permissions via a permissions policy attached to the IAM role assigned to the EC2 Host instance. I recommend starting with minimum permissions and as you run into deployment issues regarding permissions, updating the permission policy on the IAM Role ( in Cloudformation) and let the Jenkins pipeline take care of updating the infrastructure.
 
 Last but not least is adding a DNS record to Route53 for Jenkins as well as a load balancer target group and a host-based routing listener rule to forward HTTP requests to the Jenkins EC2 instance from the ALB.
 
-Load Balancer & DNS Configuration
+<details>
+<summary>Load Balancer & DNS Configuration</summary>
+<Gist id="128e4e70f43c704708e96595a1ae3c27" />
+</details>
 
 ## Spot Fleet Slaves
 
@@ -79,7 +100,10 @@ We use the same AMI for the slaves as for the master with one key difference, th
 
 An EBS volume is also assigned to each slave that will be deleted upon termination. This is required as the default size of 8GB will be quickly consumed by the local cache of Docker images.
 
-Spot Fleet Request
+<details>
+<summary>Spot Fleet Request</summary>
+<Gist id="9b761fcf79c19da1888d7add492ed61d" />
+</details>
 
 ## Trigger Pipelines Using Web Hooks
 

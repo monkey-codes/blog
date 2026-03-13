@@ -5,6 +5,7 @@ pubDate: 2020-06-01
 heroImage: "/content/images/2020/06/pii_post_header.jpg"
 tags: ["development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## What is PII and why
 
@@ -25,7 +26,11 @@ The [sample code](https://github.com/monkey-codes/logging-mask-pii) is in kotlin
 
 The basic idea is that all PII fields are annotated as such so that the masking functionality can detect fields that require special treatment.
 
+<Gist id="21b319d15829ba092454a0828a7f3f36" />
+
 To perform the masking, a custom `PIIMaskingToStringBuilder` can be built based on the [commons-lang](http://commons.apache.org/proper/commons-lang/) `ReflectionToStringBuilder`. Overriding the `getValue` method provides a convenient hook to scan the field for the `@PII` annotation and, if found, mask the value with the configured `DataMaskingFunction`.
+
+<Gist id="c5cc163b92bca3e96cdbdccff5b83289" />
 
 One thing to note about this solution is that any `toString()` implementation on the class is ignored in favour of the custom builder. This means the flexibility around the `toString` implementation is sacrificed for a global way of dealing with PII. Having said that, commons-lang does provide a `@ToStringExclude` annotation that can be used to ignore certain fields on a Class. This is very useful for data structures with circular references.
 
@@ -34,7 +39,11 @@ One thing to note about this solution is that any `toString()` implementation on
 This approach works by creating a [Factory Method](https://en.wikipedia.org/wiki/Factory_method_pattern) for the Logger that delegates to  
 slf4j LoggerFactory to get the Logger implementation and then proceeds to [Decorate](https://en.wikipedia.org/wiki/Decorator_pattern) it with Logger that scans arguments to the template log message for fields annotated with `@PII`. Given an argument that does contain sensitive fields, the logger hands off to the `PIIMaskingToStringBuilder` to perform the masking.
 
+<Gist id="d57ed9131e929b1e18aa50d03b3d953a" />
+
 This is a simple approach and would be enough to solve the problem in most cases. It has one shortcoming, developers have to be disciplined and not rely on the toString() implementation on the Class. If the above code was changed to:
+
+<Gist id="a8d3918308efabb47fee8e901180db1a" />
 
 The `PIIMaskingToStringBuilder` will have no opportunity to scan customer for PII since the string is already created before it is passed to the logger, the output will contain all the sensitive information. Which brings us to the second approach that will work in all scenarios but requires compile-time weaving of an Aspect.
 
@@ -42,9 +51,14 @@ The `PIIMaskingToStringBuilder` will have no opportunity to scan customer for PI
 
 The basic idea is to weave a `PIIAspect` around all the `toString` implementations, scoped to your application package. When `toString` is called, the aspect will look at the target on the `ProceedingJoinPoint` and if any of the fields are annotated with `@PII`, handoff to the `PIIMaskingToStringBuilder` to do the heavy lifting.
 
+<Gist id="a8798aae077dda6c777a1d1f8c5c047f" />
+
 Getting compile-time weaving working together with the Kotlin compiler in Maven proved more challenging than what I expected. Eventually, I gave up on using the `aspectj-maven-plugin` and settled on `jcabi-maven-plugin`. The important part to note is that [kotlin kapt](https://kotlinlang.org/docs/reference/kapt.html) had to be configured to support annotation processing.
 
-pom.xml
+<details>
+<summary>pom.xml</summary>
+<Gist id="7d52195f8699067b34373ed6938645f5" />
+</details>
 
 The compile-time weaving does not automatically work in Intellij, but running `./mvnw spring-boot:run` goal will correctly compile and then weave the aspect before running the app. At the time writing this I could not find any documentation on how to configure the kotlin compiler in IntelliJ to work with AJC.
 

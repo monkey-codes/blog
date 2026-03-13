@@ -5,6 +5,7 @@ pubDate: 2020-08-24
 heroImage: "/content/images/2020/08/sonarqube_post_header.jpg"
 tags: ["development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 ## Overview
 
@@ -51,6 +52,8 @@ $ git log --pretty="%ci %H" | awk '{ print $1,$4}' | awk '{arr[$1]=$2}END{for (a
 The command will produce list containing the first commit of every day and the date of the commit. The next step is to check out each of these commits (from oldest to latest) and run the tests with `--code-coverage` followed by `sonar-scanner` with the `-Dsonar.projectDate` set to the date of the commit.
 
 The whole script:
+
+<Gist id="ea28df6eae139b1cc4881e924dbdb50b" />
 
 Sample sonarqube dashboard:
 

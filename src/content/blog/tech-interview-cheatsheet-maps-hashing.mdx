@@ -5,6 +5,7 @@ pubDate: 2017-05-27
 heroImage: "/content/images/2017/05/tech_interview_cheatsheet-1.jpg"
 tags: ["Algorithms","development"]
 ---
+import Gist from '../../components/Gist.astro';
 
 In Part 1 of this series I looked at [common search and sorting algorithms used on Lists](/tech-interview-cheatsheet-lists-search-sort/). This post will look at _Hash functions_ and how they are applied to _Sets_ and _Maps_ to offer constant time lookup performance.
 
@@ -23,7 +24,7 @@ _Collisions_ happen when the _Hash function_ returns the same value for 2 differ
 
 ### Load Factor
 
-$$ \\text{load\_factor} = \\text{no\_of\_entries} \\div \\text{no\_of\_buckets}$$
+$$ \\text{'{'}load\_factor{'}'} = \\text{'{'}no\_of\_entries{'}'} \\div \\text{'{'}no\_of\_buckets{'}'}$$
 
 Gives a sense of how full a _Hash Table_ is. A _Load Factor_ of 0.01 means only 10 values are stored in a _Hash Table_ with a 1000 buckets, a huge waste of memory.
 
@@ -50,8 +51,10 @@ One of the main applications of _Hash functions_ are _Hash Maps_. Both the _key_
 
 A String can be converted into a number by using something like ASCII codes. Java favours large hash codes over the risk of _collisions_ by using _Hash function_ similar to this: ($s\[x\]$ would contain the ASCII code for the character in position x of the String):
 
-$$s\[0\]\\times 31^\\text{(n-1)} + s\[1\]\\times 31^\\text{(n-2)} +\\ ...\\ +s\[n-1\]$$
+$$s\[0\]\\times 31^\\text{'{'}(n-1){'}'} + s\[1\]\\times 31^\\text{'{'}(n-2){'}'} +\\ ...\\ +s\[n-1\]$$
 
 A simple _Hash table_ implementation in python:
+
+<Gist id="5d8edc44f7f4f66f551dcc44c1835642" />
 
 In part 3 I will look at [trees](/tech-interview-cheatsheet-trees/).

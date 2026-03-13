@@ -1,0 +1,93 @@
+---
+interface Props {
+  id: string;
+  user?: string;
+}
+
+interface GistFile {
+  filename: string;
+  language: string | null;
+  content: string;
+}
+
+const { id, user = 'monkey-codes' } = Astro.props;
+
+const gistUrl = `https://gist.github.com/${user}/${id}`;
+const apiUrl = `https://api.github.com/gists/${id}`;
+
+let files: GistFile[] = [];
+let error = false;
+
+try {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+  };
+  if (import.meta.env.GITHUB_TOKEN) {
+    headers.Authorization = `token ${import.meta.env.GITHUB_TOKEN}`;
+  }
+  const res = await fetch(apiUrl, { headers });
+  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+  const data = await res.json();
+  files = Object.values(data.files as Record<string, GistFile>);
+} catch {
+  error = true;
+}
+
+function langAlias(lang: string | null): string {
+  if (!lang) return '';
+  const lower = lang.toLowerCase();
+  const map: Record<string, string> = {
+    'c#': 'csharp',
+    'c++': 'cpp',
+    'objective-c': 'objectivec',
+    dockerfile: 'docker',
+  };
+  return map[lower] ?? lower;
+}
+---
+
+{error ? (
+  <p>
+    <a href={gistUrl}>View gist on GitHub</a>
+  </p>
+) : (
+  <div class="gist-embed">
+    {files.map((file) => (
+      <div class="gist-file">
+        <div class="gist-filename">{file.filename}</div>
+        <pre><code class={langAlias(file.language) ? `language-${langAlias(file.language)}` : ''}>{file.content}</code></pre>
+      </div>
+    ))}
+    <div class="gist-footer">
+      <a href={gistUrl}>View on GitHub</a>
+    </div>
+  </div>
+)}
+
+<style>
+  .gist-embed {
+    margin: 1.5em 0;
+  }
+  .gist-file + .gist-file {
+    margin-top: 1em;
+  }
+  .gist-filename {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    padding: 0.5em 1em;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-subtle);
+    border-bottom: none;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+  .gist-file pre {
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+  }
+  .gist-footer {
+    margin-top: 0.5em;
+    font-size: 0.8rem;
+  }
+</style>
