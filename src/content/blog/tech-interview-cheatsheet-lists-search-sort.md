@@ -72,10 +72,10 @@ $$\\begin{array}{|c|c|}
 \\end{array}$$
 
 $$\\begin{align}  
-n & \\approx 2^\\text{iterations - 1} \\  
-\\text{iterations}& \\approx log\_2 (n) + 1\\  
-complexity & \\approx O(log\_2(n)+1) \\  
-& \\approx O(log(n))\\  
+n & \\approx 2^\\text{iterations - 1} \\\\ 
+\\text{iterations}& \\approx log\_2 (n) + 1\\\\ 
+complexity & \\approx O(log\_2(n)+1) \\\\ 
+& \\approx O(log(n))\\\\ 
 \\end{align}$$
 
 Simple python implementation (iterative):
@@ -98,11 +98,11 @@ iterations & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 3 & 4 \\\\ \\hline
 \\end{array}$$
 
 $$\\begin{align}  
-n& \\approx 2^\\text{iterations} \\  
-\\text{iterations}& \\approx log(n) \\  
-\\text{comparisons}& \\approx n \\  
-complexity& \\approx O(\\text{comparisons} \\times \\text{iterations}) \\  
-& \\approx O(n \\ log(n)) \\  
+n& \\approx 2^\\text{iterations} \\\\ 
+\\text{iterations}& \\approx log(n) \\\\ 
+\\text{comparisons}& \\approx n \\\\ 
+complexity& \\approx O(\\text{comparisons} \\times \\text{iterations}) \\\\ 
+& \\approx O(n \\ log(n)) \\\\ 
 \\end{align}$$
 
 ### Quick sort
