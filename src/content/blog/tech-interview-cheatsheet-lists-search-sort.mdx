@@ -89,7 +89,7 @@ _Bubble sort_ is the simplest of sorting algorithms and probably the one most de
 
 ### Merge sort
 
-[Merge sort](/blog/analyzing-the-merge-sort-algorithm) is an example of a _Divide and Conquer_ algorithm. Recursively split the input array until you have arrays with $\\le 2$ elements. Then merge 2 adjacent arrays by comparing the first elements, since each array is already sorted. Rinse and Repeat.
+[Merge sort](/analyzing-the-merge-sort-algorithm) is an example of a _Divide and Conquer_ algorithm. Recursively split the input array until you have arrays with $\\le 2$ elements. Then merge 2 adjacent arrays by comparing the first elements, since each array is already sorted. Rinse and Repeat.
 
 The complexity of the algorithm would roughly be $\\text{'{'}no\_comparisons{'}'} \\times \\text{'{'}no\_iterations{'}'}$. The number of comparisons (worst case) is approximately 1 less than the input size. To calculate the number of iterations, the same trick used in _Binary Search_ can be applied, namely map the number of iterations against the input size and try to spot a pattern.
 
@@ -118,7 +118,7 @@ Worst case time complexity is when the _pivot_ does not split the array roughly 
 
 <Gist id="ff350d47537fcd05715e3421e2840918" />
 
-In part 2 of this series I will look at [hash functions & maps](/blog/tech-interview-cheatsheet-maps-hashing).
+In part 2 of this series I will look at [hash functions & maps](/tech-interview-cheatsheet-maps-hashing).
 
 ## References
 

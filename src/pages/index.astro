@@ -119,7 +119,7 @@ function readingTime(body: string): string {
 							<span>{readingTime(post.body ?? '')}</span>
 						</div>
 						<h2 class="text-xl font-semibold tracking-tight leading-snug mb-2">
-							<a href={`/blog/${post.id}/`} class="text-text-primary hover:text-accent transition-colors no-underline">
+							<a href={`/${post.id}/`} class="text-text-primary hover:text-accent transition-colors no-underline">
 								{post.data.title}
 							</a>
 						</h2>
@@ -133,7 +133,7 @@ function readingTime(body: string): string {
 								</span>
 							))}
 						</div>
-						<a href={`/blog/${post.id}/`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:gap-2.5 transition-all no-underline">
+						<a href={`/${post.id}/`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:gap-2.5 transition-all no-underline">
 							Read more
 							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
 						</a>

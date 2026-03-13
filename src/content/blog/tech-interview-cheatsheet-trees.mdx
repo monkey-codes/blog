@@ -8,11 +8,11 @@ tags: ["Algorithms","development"]
 ---
 import Gist from '../../components/Gist.astro';
 
-In part 1 of this series I looked at [common search and sort algorithms used on lists](/blog/tech-interview-cheatsheet-lists-search-sort). Part 2 focused on [hash functions, sets and maps](/blog/tech-interview-cheatsheet-maps-hashing). In this post I will look at _trees_, _depth and breadth first search_, _binary search trees_ and _self balancing trees_.
+In part 1 of this series I looked at [common search and sort algorithms used on lists](/tech-interview-cheatsheet-lists-search-sort). Part 2 focused on [hash functions, sets and maps](/tech-interview-cheatsheet-maps-hashing). In this post I will look at _trees_, _depth and breadth first search_, _binary search trees_ and _self balancing trees_.
 
 ## Basic Terminology
 
-A _tree_ is essentially an extension of a [linked list](/blog/tech-interview-cheatsheet-lists-search-sort#linkedlists). It consists of a set of connected elements, called _nodes_. In contrast to _linked lists_ a _node_ can be connected to multiple other _nodes_ but there can be no cycles. A cycle is more than 1 way to get to a node. The first element is called the _root_ and elements that contain no _descendants_ are called _leaf nodes_. The connections between _nodes_ are called _edges_ and a group of _edges_ is called a _path_
+A _tree_ is essentially an extension of a [linked list](/tech-interview-cheatsheet-lists-search-sort#linkedlists). It consists of a set of connected elements, called _nodes_. In contrast to _linked lists_ a _node_ can be connected to multiple other _nodes_ but there can be no cycles. A cycle is more than 1 way to get to a node. The first element is called the _root_ and elements that contain no _descendants_ are called _leaf nodes_. The connections between _nodes_ are called _edges_ and a group of _edges_ is called a _path_
 
 _Levels_ describe how many connections it takes to reach the _root_, which resides at level 1. The _height_ of a _node_ describes the number of _edges_ between it and the furthest _leaf node_. A _leaf node_ will always have a height of 0. On the flip side, the _depth_ of a _node_ is the number _edges_ to the _root node_.
 
