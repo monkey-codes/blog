@@ -26,3 +26,7 @@ Package manager is **pnpm**. Requires Node >= 22.12.0.
 - **Migration pipeline:** `scripts/migrate-ghost.ts` reads a Ghost JSON export from `resources/`, converts HTML to Markdown via Turndown, and writes content files to `src/content/blog/`.
 - **Styling:** Tailwind CSS v4 via Vite plugin (not PostCSS). Styles in `src/styles/`.
 - **Site config:** `astro.config.mjs` — integrations: MDX, Sitemap. Site constants in `src/consts.ts`.
+
+## Writing Style
+
+When writing or editing blog posts, follow the conventions in [WRITING_GUIDE.md](WRITING_GUIDE.md).
