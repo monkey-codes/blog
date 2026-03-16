@@ -28,7 +28,7 @@ jobs:
           package-manager: pnpm@10
           node-version: 22
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
   deploy:
     needs: build
     runs-on: ubuntu-latest
