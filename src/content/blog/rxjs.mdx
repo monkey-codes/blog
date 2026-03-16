@@ -1,0 +1,142 @@
+---
+title: "RxJS"
+description: "An exploration of reactive programming with RxJS covering observables, operators, subjects, hot vs cold observables and error handling."
+pubDate: 2017-03-06
+tags: ["Javascript", "development"]
+---
+import Gist from '../../components/Gist.astro';
+
+## Reactive Programming
+
+_Reactive Programming_ is a paradigm where data is described as streams of events flowing through pipelines of transformations. Instead of imperatively telling the computer how to manipulate state step by step, you describe the relationships between data sources and let the framework handle the rest. Think of a spreadsheet: when you change a cell, every dependent formula recalculates automatically. That's reactive programming in a nutshell.
+
+RxJS is the JavaScript implementation of the [Reactive API](http://reactivex.io/), and it brings this model to everything from mouse movements and HTTP requests to input fields and WebSocket connections. Once you start thinking in streams, the way you approach problems changes fundamentally.
+
+```javascript
+const cellC2$ = cellA2$.combineLatest(cellB2$)
+    .map(cells => cells[0] + cells[1]);
+cellC2$.subscribe(value => console.log(value));
+```
+
+## Programming Paradigms
+
+To appreciate where reactive programming fits, it helps to see it alongside the other major paradigms. _Procedural_ programming relies on procedures and global state -- simple to start with but difficult to maintain at scale. _Object-oriented_ programming localizes behavior behind well-defined interfaces, though it remains imperative at its core. _Declarative_ programming tells the computer _what_ to do rather than _how_ -- SQL, HTML, and regex are classic examples. _Functional_ programming builds on pure functions with minimal state and few side effects, making code easier to reason about.
+
+_Reactive_ programming takes things further. Its primitive is the _Observable_, and it describes data as streams of events. You define transformation pipelines and subscribe to the results. It's declarative, composable, and particularly well-suited for asynchronous data flows.
+
+## Observables
+
+The _Observable_ is the core primitive of reactive programming. It produces values over time and can do so in several ways: emit values indefinitely, signal completion after a finite sequence, produce a single value, or error out. The key thing to understand is that observables are lazy -- they won't execute until something subscribes to them.
+
+```javascript
+const simple$ = new Rx.Observable(observer => {
+  // produce values using observer.next()
+  return () => {
+    // invoked when all subscribers have unsubscribed
+  };
+});
+```
+
+Everything can be modeled as a stream. Mouse movements, the current user session, web requests, input boxes -- every source either produces a value, completes, or errors.
+
+### Push vs Pull
+
+Traditional iteration is _pull-based_: you ask for the next value when you're ready. Observables are _push-based_: values arrive when the source produces them, and your subscriber reacts accordingly.
+
+<Gist id="4ab8ec54111295faeb7fe31844f28d68" />
+
+### Built-in Observable Factories
+
+RxJS provides a rich set of factory methods to create observables from common sources:
+
+- `Observable.interval` and `Observable.timer` for time-based sequences
+- `Observable.of` for varargs and `Observable.from` for arrays or iterables (values are flattened)
+- `Observable.throw`, `Observable.empty`, and `Observable.never` for control flow
+- `Observable.defer` invokes a factory function for each new subscriber
+- `Observable.range` produces a sequence from a start value and count
+- `Observable.fromEvent` detects the event system automatically (DOM, jQuery, socket.io)
+- `Observable.bindNodeCallback` wraps Node-style callbacks like `fs.readdir`
+- `Observable.fromPromise` bridges promises into the reactive world
+
+## Operators
+
+_Operators_ are the real power of RxJS. An operator is a special kind of observable that doesn't produce values itself -- it transforms values flowing through the pipeline. Operators return new observables, which means they can be chained together to build complex transformations from simple, composable pieces.
+
+### Subscriptions
+
+A _Subscription_ sits at the end of the pipeline and causes a side effect. It takes three callback functions: `next` for each value, `error` when something goes wrong, and `complete` when the stream finishes.
+
+```javascript
+simple$.subscribe(
+  item => console.log(`one next ${item}`),
+  error => console.log(`one error ${error}`),
+  () => console.log('complete')
+);
+```
+
+### Transformation Operators
+
+`map` transforms each value in the stream. `mergeMap` (also known as `flatMap`) is used when the transformation itself returns an observable or collection -- the nested values get flattened and emitted one by one. `switchMap` is similar to `mergeMap` but discards the current inner observable whenever a new outer value arrives. This makes it perfect for autocomplete scenarios where you want to cancel the previous HTTP request when the user types a new character.
+
+`reduce` collects all values and emits a single result once the stream completes. `scan` is like a live reduce -- it emits the accumulated value after each incoming event without waiting for completion. This distinction matters when you need running totals or state accumulation on an infinite stream.
+
+### Filtering Operators
+
+`filter` passes through only values that match a predicate. `first`, `last`, and `single` extract specific values and will error on an empty observable. `take` and `skip` work with counts, while `takeWhile` and `skipWhile` accept predicates. `takeUntil` and `skipUntil` use another observable as the control signal.
+
+### Combination Operators
+
+`merge` interleaves values from multiple observables as they arrive. `concat` appends one observable's values after another completes. `zip` pairs values from multiple sources, only producing when all sources have emitted. `combineLatest` emits whenever any source produces a new value, combining it with the latest from the others. `withLatestFrom` is similar but only emits when the primary source produces.
+
+Both `withLatestFrom` and `combineLatest` are useful for gating a stream on some condition -- for example, pausing event processing until a user has logged in.
+
+### Utility Operators
+
+`do` (or `tap` in newer versions) allows side effects without modifying the stream. `finally` runs side effects on completion. `startWith` prepends a value to the beginning of a stream.
+
+### Buffering Operators
+
+`bufferCount`, `bufferTime`, and `buffer` collect events into arrays based on count, time windows, or a signal observable respectively. `toArray` collects all events and emits them as a single array on completion.
+
+## Subjects
+
+A _Subject_ is both an observable and an observer. It acts as a bridge between non-reactive and reactive code. That said, subjects should be a last resort -- most use cases can be solved with a more purely reactive approach.
+
+RxJS provides four types of subjects:
+
+- `Rx.Subject` is the basic type. Late subscribers miss any events that were emitted before they subscribed.
+- `Rx.BehaviorSubject` takes an initial value and immediately emits the current value to new subscribers.
+- `Rx.ReplaySubject` maintains a buffer of the last _x_ events and replays them to new subscribers.
+- `Rx.AsyncSubject` only emits the last value before completion, and only after the stream completes.
+
+## Hot vs Cold Observables
+
+This distinction trips up many newcomers. A _cold observable_ only starts producing values when a subscriber attaches, and each subscriber gets its own independent execution. `Observable.interval` is cold -- each subscriber triggers a new timer.
+
+A _hot observable_ produces values regardless of whether anyone is listening. Late subscribers miss events that have already been emitted. DOM events are a natural example.
+
+### Converting Cold to Hot
+
+Using a subject as a proxy is one way to convert a cold observable to hot, but RxJS provides cleaner mechanisms. `publish()` creates a _connectable observable_ that won't subscribe to the underlying source until you explicitly call `connect()`. This gives you control over when the stream starts.
+
+Variants include `publishLast()`, which emits only the final value, and `publishReplay(x)`, which uses a `ReplaySubject` internally to buffer the last _x_ events for late subscribers.
+
+`refCount` automates connection management: it connects on the first subscriber and disconnects when the last subscriber leaves. The common pattern `.publish().refCount()` has a shorthand: `.share()`.
+
+One important caveat: simply unsubscribing from a connectable observable won't dispose of the underlying subscription. You need to unsubscribe from the connection itself.
+
+## Error Handling
+
+When an observable errors, execution stops and all observers are unsubscribed. This default behavior can be managed with two key operators.
+
+`catch` intercepts errors and wraps them into normal items, allowing the stream to continue (or to substitute a fallback observable). `retry` will resubscribe to the source a specified number of times -- but this only works reliably with cold observables, since the resubscription needs to trigger a fresh execution. Using `retry` with `fromPromise` won't retry the actual HTTP call because the promise result is cached.
+
+## Wrapping Up
+
+RxJS provides a powerful model for handling asynchronous data flows. The learning curve is real -- thinking in streams doesn't come naturally when you've spent years writing imperative code. But once the mental model clicks, complex async scenarios like debounced searches, coordinated API calls, and real-time event handling become remarkably expressive.
+
+### References
+
+- [RxJS GitHub Repository](https://github.com/ReactiveX/rxjs)
+- [RxJS Documentation](http://reactivex.io/rxjs/)
+- [RxMarbles - Interactive Operator Diagrams](http://rxmarbles.com/)

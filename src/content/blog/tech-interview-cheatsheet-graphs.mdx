@@ -1,0 +1,67 @@
+---
+title: "Tech Interview CheatSheet - Graphs"
+description: "Overview of Graphs, including graph representations, depth first search (DFS), breadth first search (BFS) and Eulerian paths."
+pubDate: 2020-05-13
+tags: ["Algorithms", "development"]
+---
+import Gist from '../../components/Gist.astro';
+
+In part 1 of this series I looked at [common search and sort algorithms used on lists](/tech-interview-cheatsheet-lists-search-sort). Part 2 focused on [hash functions, sets and maps](/tech-interview-cheatsheet-maps-hashing). Part 3 covered [trees, depth and breadth first search and self-balancing trees](/tech-interview-cheatsheet-trees). In this post I will look at _graphs_, their _representations_, _traversal algorithms_ and _Eulerian paths_.
+
+## What is a Graph
+
+A _graph_ is a data structure designed to show relationships between objects. Sometimes called a _network_, a graph consists of a set of _nodes_ (also called _vertices_) connected by _edges_. If you've read the previous post on trees, you'll recognise that a tree is actually a specific type of graph.
+
+Unlike trees, graphs can contain _cycles_, which means there's no concept of a root node. You can start at one node, follow a series of edges and end up back where you started. Edges can also contain data, often representing the "strength" or "weight" of a relationship between two nodes.
+
+## Directions and Cycles
+
+Edges in a graph can have directions, forming a _directed graph_. In a directed graph it's possible to have two edges between the same pair of nodes pointing in opposite directions. An _undirected graph_ has no sense of direction on its edges.
+
+A _cycle_ occurs when you can start at one node, follow a series of edges and arrive back at the starting node. Cycles can cause infinite loops during traversal, so many graph algorithms require the input graph to be _acyclic_. A _directed acyclic graph (DAG)_ is a commonly encountered structure that combines directed edges with the guarantee of no cycles.
+
+## Connectivity
+
+A _disconnected graph_ contains vertices that can't be reached from certain other vertices. In contrast, a _connected graph_ has some path between every pair of vertices. _Connectivity_ is a measure of the minimum number of elements that need to be removed for a graph to become disconnected, effectively measuring how "strong" the graph is.
+
+For directed graphs there's a further distinction. A _weakly connected_ directed graph is only connected if all directed edges are replaced with undirected ones. A _strongly connected_ directed graph has a path from every node to every other node in both directions.
+
+## Graph Representations
+
+There are three common ways to represent a graph in code.
+
+An _edge list_ is simply a list of edges, where each edge is represented by the IDs of its two connected vertices. This gives you a 2D list structure that's straightforward but not always efficient for lookups.
+
+An _adjacency list_ uses each vertex ID as an index into an array. Each position in the array contains a list of adjacent vertices. This is generally the most practical representation for sparse graphs.
+
+An _adjacency matrix_ is a 2D array where a value of 1 at position `[i][j]` indicates an edge between node `i` and node `j`, and 0 indicates no edge. The diagonal is usually 0 since nodes typically don't connect to themselves. In an undirected graph each edge shows up twice, making the matrix symmetric.
+
+<Gist id="8d562512662da88b6781d1fa5178f2e7" />
+
+## Graph Traversal
+
+### Depth First Search
+
+_DFS_ follows one path as far as it will go before backtracking and trying the next option. Traversal and search are essentially the same operation, the only difference being that search stops early when the target is found.
+
+DFS can be implemented with a stack or with recursion. Pick a starting node and mark it as seen. Follow an edge to an adjacent node, mark it as seen and repeat. If you encounter a node you've already seen, try a different edge. When there are no new edges to explore, pop from the stack and backtrack to the previous node.
+
+The runtime complexity is $O(|E| + |V|)$, where $|E|$ is the number of edges and $|V|$ is the number of vertices. Each edge is actually traversed twice, once to explore and once to backtrack, but this is still linear in the number of edges.
+
+<Gist id="7ba30c2c687f90830f70b5a509b75e66" />
+
+### Breadth First Search
+
+_BFS_ explores all adjacent nodes at the current depth before moving deeper into the graph. Start with a node, mark it as seen and visit all of its adjacent nodes, adding each to a queue. Once all edges from the starting node have been explored, dequeue the next node and repeat the process.
+
+The runtime complexity is $O(|E| + |V|)$, the same as DFS. The difference is purely in the order nodes are visited.
+
+<Gist id="6c2b07d1608b394964db1fa51d7a48d5" />
+
+## Eulerian Paths
+
+An _Eulerian path_ is a path in a graph that visits every edge exactly once. An _Eulerian circuit_ is an Eulerian path that starts and ends at the same vertex. These concepts are named after Leonhard Euler, who first studied them in 1736 when solving the famous Seven Bridges of Konigsberg problem.
+
+For an undirected graph, an Eulerian circuit exists if and only if every vertex has an even _degree_ (number of edges connected to it). An Eulerian path that isn't a circuit exists if exactly two vertices have an odd degree. Those two vertices will be the start and end points of the path. If more than two vertices have an odd degree, no Eulerian path exists at all.
+
+For a directed graph the conditions are slightly different. An Eulerian circuit exists if every vertex has equal _in-degree_ and _out-degree_. An Eulerian path exists if at most one vertex has an out-degree exceeding its in-degree by 1 (the start vertex) and at most one vertex has an in-degree exceeding its out-degree by 1 (the end vertex), with all other vertices having equal in-degree and out-degree.
