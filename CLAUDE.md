@@ -27,6 +27,17 @@ Package manager is **pnpm**. Requires Node >= 22.12.0.
 - **Styling:** Tailwind CSS v4 via Vite plugin (not PostCSS). Styles in `src/styles/`.
 - **Site config:** `astro.config.mjs` — integrations: MDX, Sitemap. Site constants in `src/consts.ts`.
 
+## Resume App
+
+A separate React SPA lives in `resume/` — an interactive resume that communicates with a Supabase backend. It is built with Vite + React 19 + Tailwind CSS v4 and shares the blog's color theme (defined independently in `resume/src/index.css`). Key details:
+
+- **Dev server:** `task resume:dev`
+- **Build:** `task resume:build` — outputs to `public/resume/`, which is gitignored
+- **Full build:** `task build:all` — builds resume then blog
+- **Base path:** `/resume/` — links must use `/resume/index.html` (GitHub Pages doesn't resolve trailing-slash index files)
+- **Theme colors** are duplicated between `src/styles/global.css` and `resume/src/index.css` — keep them in sync
+- **CTA color:** `--color-cta: #22c55e` (green) used for the "Ask AI About Me" button in the blog header
+
 ## Writing Style
 
 When writing or editing blog posts, follow the conventions in [WRITING_GUIDE.md](WRITING_GUIDE.md).
