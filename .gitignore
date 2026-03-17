@@ -24,3 +24,6 @@ pnpm-debug.log*
 .idea/
 
 linkedin-banner.html
+
+# resume app build output
+public/resume/

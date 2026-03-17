@@ -17,6 +17,8 @@
   --color-tag-bg: rgba(232, 148, 58, 0.1);
   --color-tag-text: #d4893a;
   --color-tag-border: rgba(232, 148, 58, 0.2);
+  --color-cta: #22c55e;
+  --color-cta-hover: #16a34a;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --radius-md: 8px;
