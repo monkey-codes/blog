@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useResumeData } from "./hooks/useResumeData";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
+import ProfileSection from "./components/ProfileSection";
 import ExperienceSection from "./components/ExperienceSection";
 import SkillsSection from "./components/SkillsSection";
 import FitCheck from "./components/FitCheck";
@@ -40,6 +41,8 @@ export default function App() {
         experiences={experiences}
         onChatOpen={() => setChatOpen(true)}
       />
+
+      <ProfileSection profile={profile} />
 
       <ExperienceSection experiences={experiences} />
 

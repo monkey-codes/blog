@@ -9,6 +9,7 @@ export interface CandidateProfile {
   linkedin_url: string | null;
   twitter_url: string | null;
   website_url: string | null;
+  bullet_points: string[] | null;
 }
 
 export interface Experience {
