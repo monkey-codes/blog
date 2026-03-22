@@ -53,7 +53,7 @@ export default function Hero({ profile, experiences, onChatOpen }: HeroProps) {
       {/* CTA */}
       <button
         onClick={onChatOpen}
-        className="group flex items-center gap-2 rounded-lg bg-cta px-6 py-3 text-base font-medium text-bg-primary transition-colors hover:bg-cta-hover"
+        className="group flex items-center gap-2 rounded-lg border border-white/15 bg-cta/90 px-6 py-3 text-base font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-sm transition-colors hover:bg-cta"
       >
         <svg
           className="h-5 w-5"
