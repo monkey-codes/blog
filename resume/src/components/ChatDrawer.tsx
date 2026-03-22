@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FaqResponse } from "../lib/types";
+import { sendChatMessage } from "../lib/api";
 import ChatMessage from "./ChatMessage";
 import SuggestedQuestions from "./SuggestedQuestions";
 
@@ -29,6 +30,7 @@ export default function ChatDrawer({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState("");
 
   const suggestions =
     faqResponses.length > 0
@@ -43,22 +45,25 @@ export default function ChatDrawer({
     setInput("");
     setLoading(true);
 
-    // Check FAQ responses for a match first
-    const faqMatch = faqResponses.find(
-      (f) => f.question.toLowerCase() === text.trim().toLowerCase(),
-    );
-
-    // TODO: Wire up to AI backend for non-FAQ questions
-    await new Promise((r) => setTimeout(r, 800));
-
-    const reply: Message = {
-      role: "assistant",
-      content: faqMatch
-        ? faqMatch.answer
-        : "AI chat is not yet connected. This will be powered by an AI backend that has full context about my experience and skills.",
-    };
-    setMessages((prev) => [...prev, reply]);
-    setLoading(false);
+    try {
+      const response = await sendChatMessage(text.trim(), conversationId);
+      setConversationId(response.conversation_id);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: response.reply },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Sorry, I'm having trouble responding right now. Please try again in a moment.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleSubmit(e: React.FormEvent) {

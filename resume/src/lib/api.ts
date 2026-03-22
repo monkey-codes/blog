@@ -49,3 +49,30 @@ export async function fetchFaqResponses(): Promise<FaqResponse[]> {
   if (error) throw error;
   return data;
 }
+
+export async function sendChatMessage(
+  message: string,
+  conversationId: string,
+): Promise<{ conversation_id: string; reply: string }> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify({
+      candidate_id: candidateId,
+      message,
+      conversation_id: conversationId,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Chat request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
