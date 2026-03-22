@@ -1,37 +1,30 @@
 import { useState } from "react";
 import FitResult from "./FitResult";
-
-type FitResultData = {
-  verdict: "strong_fit" | "worth_conversation" | "not_your_person";
-  summary: string;
-  gaps: string[];
-  transfers: string[];
-  recommendation: string;
-};
+import { analyzeJobFit } from "../lib/api";
+import type { FitResult as FitResultType } from "../lib/types";
 
 export default function FitCheck() {
   const [jd, setJd] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<FitResultData | null>(null);
+  const [result, setResult] = useState<FitResultType | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleAnalyze() {
     if (!jd.trim()) return;
     setAnalyzing(true);
     setResult(null);
+    setError(null);
 
-    // TODO: Wire up to AI backend
-    // For now, show a placeholder after a brief delay
-    await new Promise((r) => setTimeout(r, 1500));
-    setResult({
-      verdict: "worth_conversation",
-      summary:
-        "Fit analysis will be powered by AI once the backend is connected. Paste a real job description to get an honest assessment.",
-      gaps: ["AI-powered analysis not yet connected"],
-      transfers: ["Placeholder for transferable skills"],
-      recommendation:
-        "Connect the AI backend to enable real fit analysis.",
-    });
-    setAnalyzing(false);
+    try {
+      const data = await analyzeJobFit(jd.trim());
+      setResult(data);
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Something went wrong. Try again.",
+      );
+    } finally {
+      setAnalyzing(false);
+    }
   }
 
   return (
@@ -60,6 +53,12 @@ export default function FitCheck() {
           {analyzing ? "Analyzing..." : "Analyze Fit"}
         </button>
       </div>
+
+      {error && (
+        <div className="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-400">
+          {error}
+        </div>
+      )}
 
       {result && <FitResult result={result} />}
     </section>

@@ -4,6 +4,7 @@ import type {
   Experience,
   Skill,
   FaqResponse,
+  FitResult,
 } from "./types";
 
 const candidateId = import.meta.env.VITE_CANDIDATE_ID;
@@ -72,6 +73,31 @@ export async function sendChatMessage(
 
   if (!response.ok) {
     throw new Error(`Chat request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function analyzeJobFit(
+  jobDescription: string,
+): Promise<FitResult> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/job-fit`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify({
+      candidate_id: candidateId,
+      job_description: jobDescription,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Job fit analysis failed: ${response.status}`);
   }
 
   return response.json();

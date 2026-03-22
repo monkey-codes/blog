@@ -38,3 +38,25 @@ export interface FaqResponse {
   question: string;
   answer: string;
 }
+
+export interface FitStrength {
+  requirement: string;
+  match: string;
+}
+
+export interface FitGap {
+  requirement: string;
+  gap_title: string;
+  explanation: string;
+}
+
+export interface FitResult {
+  verdict: "strong_fit" | "worth_conversation" | "probably_not";
+  headline: string;
+  opening: string;
+  confidence: number;
+  strengths: FitStrength[];
+  gaps: FitGap[];
+  transfers: string;
+  recommendation: string;
+}
