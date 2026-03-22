@@ -35,7 +35,7 @@ export default function FitCheck() {
   }
 
   return (
-    <section id="fit-check" className="mx-auto max-w-3xl px-6 py-20">
+    <section id="fit-check" className="mx-auto max-w-3xl px-6 py-14">
       <h2 className="mb-2 text-3xl font-bold tracking-tight">
         Honest Fit Assessment
       </h2>

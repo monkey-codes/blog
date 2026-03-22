@@ -28,7 +28,7 @@ const categories = [
 
 export default function SkillsSection({ skills }: SkillsSectionProps) {
   return (
-    <section className="mx-auto max-w-3xl px-6 py-20">
+    <section className="mx-auto max-w-3xl px-6 py-14">
       <h2 className="mb-10 text-3xl font-bold tracking-tight">Skills</h2>
       <div className="grid gap-4 md:grid-cols-3">
         {categories.map((cat) => (

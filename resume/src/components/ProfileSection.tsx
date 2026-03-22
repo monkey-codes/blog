@@ -19,7 +19,7 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
   }
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-20">
+    <section className="mx-auto max-w-3xl px-6 py-12">
       <h2 className="mb-10 text-3xl font-bold tracking-tight">Profile</h2>
       <dl className="space-y-6">
         {profile.bullet_points.map((point, i) => (

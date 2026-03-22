@@ -20,7 +20,7 @@ export default function Hero({ profile, experiences, onChatOpen }: HeroProps) {
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cta" />
         </span>
         <span className="font-mono text-sm text-text-secondary">
-          Open to Staff+ Infrastructure roles
+          Open to Senior Engineering roles
         </span>
       </div>
 
