@@ -26,6 +26,10 @@ jobs:
         run: cd resume && pnpm install --frozen-lockfile
       - name: Build resume app
         run: cd resume && pnpm build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_CANDIDATE_ID: ${{ secrets.VITE_CANDIDATE_ID }}
       - name: Build with Astro
         uses: withastro/action@v3
         with:
