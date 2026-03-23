@@ -16,3 +16,19 @@ tasks:
   migrate:
     desc: Migrate Ghost posts to Astro content
     cmd: npx tsx scripts/migrate-ghost.ts {{.CLI_ARGS}}
+
+  resume:dev:
+    desc: Start the resume app dev server
+    dir: resume
+    cmd: pnpm dev
+
+  resume:build:
+    desc: Build the resume app into public/resume/
+    dir: resume
+    cmd: pnpm build
+
+  build:all:
+    desc: Build resume app then the blog
+    cmds:
+      - task: resume:build
+      - task: build
