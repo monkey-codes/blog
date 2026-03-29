@@ -5,6 +5,7 @@ pubDate: 2016-05-22
 updatedDate: 2018-06-04
 #heroImage: "/content/images/2016/05/algorithms_post_header.jpg"
 tags: ["Algorithms"]
+math: true
 ---
 
 ## Strategy - Divide and Conquer

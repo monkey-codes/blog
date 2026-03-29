@@ -18,7 +18,7 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	hideMetadata?: boolean;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [], headings = [], hideMetadata = false, slug } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [], headings = [], hideMetadata = false, slug, math = false } = Astro.props;
 const ogImage = slug ? new URL(`/og/${slug}.png`, Astro.site).href : undefined;
 const hasHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3).length >= 2;
 ---
@@ -105,7 +105,9 @@ const hasHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3).lengt
 			</div>
 		</main>
 		<Footer />
-		<script is:inline>
+		{math && (
+			<>
+				<script is:inline>
 window.MathJax = {
   tex: {
     inlineMath: [['$', '$']],
@@ -120,8 +122,10 @@ window.MathJax = {
     fontCache: 'global'
   }
 };
-		</script>
-		<script is:inline src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+				</script>
+				<script is:inline src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+			</>
+		)}
 
 		<!-- Copy button for code blocks -->
 		<script>
