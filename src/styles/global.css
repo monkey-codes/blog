@@ -149,8 +149,24 @@
     margin-bottom: 1.5em;
   }
 
+  .prose ul {
+    list-style-type: disc;
+  }
+
+  .prose ol {
+    list-style-type: decimal;
+  }
+
+  .prose ul ul {
+    list-style-type: circle;
+  }
+
   .prose li {
     margin-bottom: 0.5em;
+  }
+
+  .prose li::marker {
+    color: var(--color-accent);
   }
 
   .prose a {

@@ -2,7 +2,7 @@
 title: "Blogging by Voice: Wispr Flow, Markdown, and GitHub Pages"
 description: "What happened when I tried writing blog posts by speaking them with Wispr Flow and committing Markdown straight to my Astro site on GitHub."
 pubDate: 2026-10-24
-draft: true
+draft: false
 tags: ["development", "ai"]
 ---
 
@@ -17,6 +17,8 @@ My personality makes me want to polish the content a lot more than is necessary 
 The basic setup is that I use Wispr Flow on my phone for dictation and have it write a Markdown file directly in a branch on my GitHub repo using my browser. Once the branch is merged, GitHub Actions builds and publishes the post to my blog automatically. This part is definitely clunky. Opening the GitHub website in a mobile browser and creating a branch and a new file feels very unnatural. I'll need to find a more natural way to create the content and get it into GitHub.
 
 ## The Workflow in Practice
+
+![Wispr Flow blogging workflow: Outline with Claude → Branch + file on GitHub → Dictate with Wispr Flow → Merge and publish](../../assets/wispr-flow-workflow.png)
 
 1. I open a new branch in GitHub in the browser and create a new Markdown file in the content folder.
 2. I use a Claude session to outline the post, which helps me collect and organise my thoughts and gives the post some structure. I copy the outline into the new Markdown file.
